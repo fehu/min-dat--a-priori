@@ -6,7 +6,7 @@ module DataAssociation.Definitions (
 
   Itemset(..)
 , ItemsetListing(..)
-, Itemsets(..)
+--, Itemsets(..)
 
 , MinSupport(..)
 , MinConfidence(..)
@@ -30,6 +30,6 @@ data AssocRule item = AssocRule{ ruleFrom    :: [item]
                                , ruleFollows :: [item]
                                }
 
-data Itemsets it = forall set. (ItemsetListing set it) =>
-                 Itemsets [set]
+--data Itemsets it = forall set. (ItemsetListing set it) =>
+--                 Itemsets [set]
 

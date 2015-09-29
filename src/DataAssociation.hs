@@ -2,7 +2,7 @@ module DataAssociation (
 
   Itemset(..)
 , ItemsetListing(..)
-, Itemsets(..)
+--, Itemsets(..)
 
 , MinSupport(..)
 , MinConfidence(..)
