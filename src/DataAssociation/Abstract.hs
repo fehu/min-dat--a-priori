@@ -11,11 +11,11 @@ module DataAssociation.Abstract (
 
 import DataAssociation.Definitions
 
-class (Itemset set) =>
-    LargeItemsetsExtractor set where
-        findLargeItemsets :: MinSupport -> [set] -> [set]
+class (Itemset set it) =>
+    LargeItemsetsExtractor set it where
+        findLargeItemsets :: MinSupport -> [set it] -> [set it]
 
-class (ItemsetListing set it) =>
+class (Itemset set it) =>
     AssociationRulesGenerator set it where
         generateAssociationRules :: MinConfidence -> [set it] -> [AssocRule it]
 

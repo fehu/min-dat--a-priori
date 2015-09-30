@@ -1,9 +1,6 @@
 module DataAssociation (
 
   Itemset(..)
-, ItemsetListing(..)
---, Itemsets(..)
-
 , MinSupport(..)
 , MinConfidence(..)
 
@@ -18,7 +15,7 @@ import DataAssociation.Abstract
 
 
 
-mineAssociationRules :: ( LargeItemsetsExtractor (set it)
+mineAssociationRules :: ( LargeItemsetsExtractor set it
                         , AssociationRulesGenerator set it) =>
     MinSupport -> MinConfidence -> [set it] -> [AssocRule it]
 

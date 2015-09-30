@@ -19,8 +19,8 @@ import DataAssociation.Utils
 import DataAssociation.Abstract
 
 
-instance (Ord (set it), Ord it, ItemsetListing set it) =>
-    LargeItemsetsExtractor (set it) where
+instance (Ord (set it), Ord it, Itemset set it) =>
+    LargeItemsetsExtractor set it where
         findLargeItemsets minsup rawdata = apriory minsup tr seeds []
             where tr = (rawdata, length rawdata)
                   itemsCount = sortingGroupBy id length (concatMap listItems rawdata)
@@ -34,7 +34,7 @@ sufficientSupport (MinSupport minsup) transactionsSize =
 
 -----------------------------------------------------------------------------
 -- generate Large itemsets with a-priory algorithm. (Figure 1 in the article)
-apriory :: (Ord (set it), Ord it, ItemsetListing set it) =>
+apriory :: (Ord (set it), Ord it, Itemset set it) =>
     MinSupport -> ([set it], Int) -> [set it] -> [set it] -> [set it]
 
 apriory minsup tr@(transactions, transactionsSize) seeds acc =
@@ -48,7 +48,8 @@ apriory minsup tr@(transactions, transactionsSize) seeds acc =
 -----------------------------------------------------------------------------
 -- count the number of occurences of each candidate in the transactions
 -- the 'occurence' is when the candidate is a subset of the transaction
-countCandidates :: (Ord set, Itemset set) => [set] -> [set] -> Map set Int
+countCandidates :: (Ord (set it), Itemset set it) =>
+    [set it] -> [set it] -> Map (set it) Int
 
 countCandidates transactions candidates = Map.fromList cl
     where cl = do candidate <- candidates
@@ -59,9 +60,9 @@ countCandidates transactions candidates = Map.fromList cl
 -----------------------------------------------------------------------------
 -- Apriori Candidate Generation. Consists of `join` and `prune`.
 -- (2.1.1 in the article)
-aprioryGen      :: (ItemsetListing set it, Ord it) => [set it] -> [set it]
-aprioryGenJoin  :: (ItemsetListing set it, Ord it) => [set it] -> [set it]
-aprioryGenPrune :: (ItemsetListing set it)         => [set it] -> [set it] -> [set it]
+aprioryGen      :: (Itemset set it, Ord it) => [set it] -> [set it]
+aprioryGenJoin  :: (Itemset set it, Ord it) => [set it] -> [set it]
+aprioryGenPrune :: (Itemset set it)         => [set it] -> [set it] -> [set it]
 
 --aprioryGen seeds = aprioryGenPrune seeds $ aprioryGenJoin seeds
 
@@ -86,7 +87,7 @@ aprioryGenPrune seeds generated = do g <- generated
 --         2. n-1 elements are the same
 --         3. one element differs
 -- returns Nothing otherwise
-oneElementDifference :: (ItemsetListing set it) => set it -> set it -> Maybe (it, it)
+oneElementDifference :: (Itemset set it) => set it -> set it -> Maybe (it, it)
 oneElementDifference x y =
     if sameLength && length difference == 1
         then Just (head difference, head difference2)
@@ -98,7 +99,7 @@ oneElementDifference x y =
 -----------------------------------------------------------------------------
 -- given an itemset of length l, returns a set of itemsets of length (l - 1)
 --                                      that are subsets of the original one
-allSubsetsOneShorter :: (ItemsetListing set it) => set it -> [set it]
+allSubsetsOneShorter :: (Itemset set it) => set it -> [set it]
 allSubsetsOneShorter set = liftM (`deleteItemAt` set) [0 .. setSize set]
 -- this equals to:
 --      do i <- [0 .. setSize set]
