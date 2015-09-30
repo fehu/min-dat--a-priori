@@ -13,7 +13,7 @@ module DataAssociation.Definitions (
 ) where
 
 
-class (Eq (set item)) =>
+class (Eq (set item), Show (set item), Show item) =>
     Itemset set item where
         -- a `contains` b
         contains  :: set item -> set item -> Bool

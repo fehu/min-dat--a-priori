@@ -8,6 +8,7 @@ module WekaData (
 , WekaDataAttribute(..)
 , readWekaData
 
+, wekaData2Sparse
 
 ) where
 

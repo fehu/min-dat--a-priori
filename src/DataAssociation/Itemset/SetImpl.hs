@@ -2,17 +2,22 @@
 -- Implementation of Itemset by Data.Set
 -----------------------------------------------------------------------------
 
-module DataAssociation.Itemset.SetImpl where
+module DataAssociation.Itemset.SetImpl (
+
+  Itemsets
+
+) where
 
 import DataAssociation.Definitions
 
 import Data.Set
 
+type Itemsets it = [Set it]
 
-instance (Ord it) =>
+instance (Ord it, Show it) =>
     Itemset Set it where
         setSize = size
-        contains = isSubsetOf
+        contains = flip isSubsetOf
         listItems = toList
         newItemset = fromList
         insertItem = insert
