@@ -4,24 +4,21 @@
 -- see http://rakesh.agrawal-family.com/papers/vldb94apriori.pdf
 -----------------------------------------------------------------------------
 
-module DataAssociation.APriori (
-
-) where
+module DataAssociation.APriori where
 
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Data.Maybe (maybeToList)
-import GHC.Float
-import Control.Monad
 
 import DataAssociation
+import DataAssociation.Definitions
 import DataAssociation.Utils
 import DataAssociation.Abstract
 
 
 instance (Ord (set it), Ord it, Itemset set it) =>
     LargeItemsetsExtractor set it where
-        findLargeItemsets minsup rawdata = apriory minsup tr seeds []
+        findLargeItemsets minsup rawdata = apriory minsup tr seeds Map.empty
             where tr = (rawdata, length rawdata)
                   itemsCount = sortingGroupBy id length (concatMap listItems rawdata)
                   satisfying = filter f itemsCount
@@ -29,34 +26,19 @@ instance (Ord (set it), Ord it, Itemset set it) =>
                   -- itemsets of size 1 with sufficient support
                   seeds = map (newItemset . (:[]) . fst) satisfying
 
-sufficientSupport (MinSupport minsup) transactionsSize =
-    (>= minsup) . (/ int2Float transactionsSize) . int2Float
-
 -----------------------------------------------------------------------------
 -- generate Large itemsets with a-priory algorithm. (Figure 1 in the article)
 apriory :: (Ord (set it), Ord it, Itemset set it) =>
-    MinSupport -> ([set it], Int) -> [set it] -> [set it] -> [set it]
+    MinSupport -> ([set it], Int) -> [set it] -> Map (set it) Float -> Map (set it) Float
 
-apriory minsup tr@(transactions, transactionsSize) seeds acc =
+apriory mSup@(MinSupport minsup) tr@(transactions, transactionsSize) seeds acc =
 --    error ("cCount = " ++ show cCount)
-    if null next then acc
-                 else apriory minsup tr next (acc ++ next)
-    where next = Map.keys $ Map.filter f cCount
-          f    = sufficientSupport minsup transactionsSize
-          cCount     = countCandidates transactions candidates
+    if Map.null next then acc
+                     else apriory mSup tr (Map.keys next) (Map.union acc next)
+    where next = Map.filter (>= minsup) cCount
+          cCount     = Map.map (calculateSupport transactionsSize) $
+                               countSupported transactions candidates
           candidates = aprioryGen seeds
-
------------------------------------------------------------------------------
--- count the number of occurences of each candidate in the transactions
--- the 'occurence' is when the candidate is a subset of the transaction
-countCandidates :: (Ord (set it), Itemset set it) =>
-    [set it] -> [set it] -> Map (set it) Int
-
-countCandidates transactions candidates = Map.fromList cl
-    where cl = do candidate <- candidates
-                  let cnt tr = if tr `contains` candidate then 1 else 0
-                  let count = foldr (\tr acc -> acc + cnt tr) 0 transactions
-                  return (candidate, count)
 
 -----------------------------------------------------------------------------
 -- Apriori Candidate Generation. Consists of `join` and `prune`.
@@ -74,9 +56,7 @@ aprioryGenJoin seeds = do p <- seeds
                                            else []
 
 aprioryGenPrune seeds generated = do g <- generated
-                                     if all (`elem` seeds) (allSubsetsOneShorter g)
-                                        then return g
-                                        else mzero
+                                     [g | all (`elem` seeds) (allSubsetsOneShorter g)]
 
 
 -----------------------------------------------------------------------------
@@ -94,15 +74,5 @@ oneElementDifference x y =
     where sameLength  = setSize x == setSize y
           difference  = itemsetDiff x y
           difference2 = itemsetDiff y x
-
------------------------------------------------------------------------------
--- given an itemset of length l, returns a set of itemsets of length (l - 1)
---                                      that are subsets of the original one
-allSubsetsOneShorter :: (Itemset set it) => set it -> [set it]
-allSubsetsOneShorter set = liftM (`deleteItemAt` set) [0 .. setSize set - 1]
--- this equals to:
---      do i <- [0 .. setSize set - 1]
---         return $ deleteItemAt i set
-
 
 

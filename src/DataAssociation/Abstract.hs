@@ -11,13 +11,15 @@ module DataAssociation.Abstract (
 
 import DataAssociation.Definitions
 
+import Data.Map (Map)
+
 class (Itemset set it) =>
     LargeItemsetsExtractor set it where
-        findLargeItemsets :: MinSupport -> [set it] -> [set it]
+        findLargeItemsets :: MinSupport -> [set it] -> Map (set it) Float
 
 class (Itemset set it) =>
     AssociationRulesGenerator set it where
-        generateAssociationRules :: MinConfidence -> [set it] -> [AssocRule it]
+        generateAssociationRules :: MinConfidence -> [set it] -> Map (set it) Float -> [AssocRule it]
 
 
 

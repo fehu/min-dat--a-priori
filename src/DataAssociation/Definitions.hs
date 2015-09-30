@@ -12,7 +12,6 @@ module DataAssociation.Definitions (
 
 ) where
 
-
 class (Eq (set item), Show (set item), Show item) =>
     Itemset set item where
         -- a `contains` b
@@ -36,3 +35,5 @@ newtype MinConfidence = MinConfidence Float
 data AssocRule item = AssocRule{ ruleFrom    :: [item]
                                , ruleFollows :: [item]
                                }
+                    deriving Show
+
