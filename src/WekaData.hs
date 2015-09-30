@@ -4,11 +4,17 @@
 
 module WekaData (
 
+  RawWekaData(..)
+, WekaDataAttribute(..)
+, readWekaData
+
+
 ) where
 
 import Data.List
 import Data.List.Split
 import Data.Char
+import qualified Data.Map as Map
 import Control.Applicative
 
 data RawWekaData = RawWekaData { rwdName      :: String
@@ -20,6 +26,7 @@ data RawWekaData = RawWekaData { rwdName      :: String
 data WekaDataAttribute = WekaAttrNum String
                        | WekaAttrNom String [String]
                     deriving Show
+
 
 readWekaData :: String -> IO RawWekaData
 readWekaData filename = do lines <- splitOn "\n" <$> readFile filename
@@ -50,7 +57,7 @@ readWekaData' (l:lines) name@(Just _) attrs@(_:_) dta
     | otherwise              = readWekaData' lines name attrs (splitOn "," l : dta)
 
 -- return result
-readWekaData' [] (Just name) attrs dta = RawWekaData name attrs dta
+readWekaData' [] (Just name) attrs dta = RawWekaData name (reverse attrs) (reverse dta)
 
 dropComment = takeWhile (/= '%')
 dropSpaces = dropWhile isSpace
@@ -65,3 +72,28 @@ readWekaAttr line | head l' == '{'            = WekaAttrNom name domain
           l'     = dropSpaces $ drop (length name + len) l
           f      = filter (fmap not $ (||) <$> isSpace <*> (`elem` "{}"))
           domain = map f $ splitOn "," l'
+
+
+-----------------------------------------------------------------------------
+-- in the data: _foreach_ NOM attribute with _singleton_ domain:
+--      1. replace the domain value by attribute name
+--      2. drop the '?' items
+wekaData2Sparse :: RawWekaData -> [[String]]
+wekaData2Sparse (RawWekaData  _ attrs dta) =
+    do its <- dta
+       return $ do (it, i) <- zip its [0..]
+                   case Map.lookup i sd of Just name -> case it of "?" -> []
+                                                                   _   -> [name]
+                                           _         -> [it]
+    where singletonDomains = do (WekaAttrNom name [_], i) <- zip attrs [0..]
+                                return (i, name)
+          sd   = Map.fromList singletonDomains
+
+
+
+
+
+
+
+
+
