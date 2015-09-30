@@ -8,8 +8,8 @@ module DataAssociation.APriori (
 
 ) where
 
-import Data.Map (Map)
-import qualified Data.Map as Map
+import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as Map
 
 import GHC.Float
 import Control.Monad
@@ -19,22 +19,31 @@ import DataAssociation.Utils
 import DataAssociation.Abstract
 
 
-instance (Ord set, Itemset set) =>
-    LargeItemsetsExtractor set where
-        findLargeItemsets minsup rawdata = undefined
+instance (Ord (set it), Ord it, ItemsetListing set it) =>
+    LargeItemsetsExtractor (set it) where
+        findLargeItemsets minsup rawdata = apriory minsup tr seeds []
+            where tr = (rawdata, length rawdata)
+                  itemsCount = sortingGroupBy id length (concatMap listItems rawdata)
+                  satisfying = filter f itemsCount
+                  f = sufficientSupport minsup (length rawdata) . snd
+                  -- itemsets of size 1 with sufficient support
+                  seeds = map (newItemset . (:[]) . fst) satisfying
+
+sufficientSupport (MinSupport minsup) transactionsSize =
+    (>= minsup) . (/ int2Float transactionsSize) . int2Float
 
 -----------------------------------------------------------------------------
 -- generate Large itemsets with a-priory algorithm. (Figure 1 in the article)
 apriory :: (Ord (set it), Ord it, ItemsetListing set it) =>
     MinSupport -> ([set it], Int) -> [set it] -> [set it] -> [set it]
 
-apriory minSup@(MinSupport minsup) tr@(transactions, transactionsSize) seeds acc =
+apriory minsup tr@(transactions, transactionsSize) seeds acc =
     if null next then acc
-                 else apriory minSup tr next (acc ++ next)
-    where next = Map.keys $ Map.filter sufficientSupport cCount
-          candidates = aprioryGen seeds
+                 else apriory minsup tr next (acc ++ next)
+    where next = Map.keys $ Map.filter f cCount
+          f    = sufficientSupport minsup transactionsSize
           cCount     = countCandidates transactions candidates
-          sufficientSupport = (>= minsup) . (/ int2Float transactionsSize) . int2Float
+          candidates = aprioryGen seeds
 
 -----------------------------------------------------------------------------
 -- count the number of occurences of each candidate in the transactions
