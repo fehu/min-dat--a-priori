@@ -16,12 +16,23 @@ module DataAssociation.Definitions (
 ) where
 
 
-class Itemset set where
-    contains  :: set -> set -> Bool
+class (Eq set) =>
+    Itemset set where
+        contains  :: set -> set -> Bool
+        setSize   :: set -> Int
 
-class (Itemset set) =>
+class (Itemset (set item)) =>
     ItemsetListing set item where
-        listItems :: set -> [item]
+        listItems   :: set item -> [item]
+        -- returns the elements contained in the first argument
+        --                                   and not the second
+        itemsetDiff :: set item -> set item -> [item]
+
+        insertItem   :: item -> set item -> set item
+        deleteItemAt :: Int  -> set item -> set item
+
+        -- creates an itemset from a list of items
+        newItemset :: [item] -> set item
 
 newtype MinSupport    = MinSupport Float
 newtype MinConfidence = MinConfidence Float

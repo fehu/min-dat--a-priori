@@ -18,9 +18,9 @@ import DataAssociation.Abstract
 
 
 
-mineAssociationRules :: ( LargeItemsetsExtractor set
+mineAssociationRules :: ( LargeItemsetsExtractor (set it)
                         , AssociationRulesGenerator set it) =>
-    MinSupport -> MinConfidence -> [set] -> [AssocRule it]
+    MinSupport -> MinConfidence -> [set it] -> [AssocRule it]
 
 mineAssociationRules ms mc = generateAssociationRules mc . findLargeItemsets ms
 

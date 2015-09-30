@@ -20,6 +20,7 @@ library
                      DataAssociation.Abstract
                      DataAssociation.APriori
                      DataAssociation.SimpleRulesGenerator
+                     DataAssociation.Utils
 --    other-modules:
 
 --executable apriori

@@ -17,7 +17,7 @@ class (Itemset set) =>
 
 class (ItemsetListing set it) =>
     AssociationRulesGenerator set it where
-        generateAssociationRules :: MinConfidence -> [set] -> [AssocRule it]
+        generateAssociationRules :: MinConfidence -> [set it] -> [AssocRule it]
 
 
 
