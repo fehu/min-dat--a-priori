@@ -22,6 +22,7 @@ library
                      DataAssociation.APriori
                      DataAssociation.SimpleRulesGenerator
                      DataAssociation.Utils
+                     DataAssociation.Itemset.SetImpl
                      WekaData
 --    other-modules:
 

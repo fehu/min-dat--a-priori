@@ -15,9 +15,11 @@ module DataAssociation.Definitions (
 
 class (Eq (set item)) =>
     Itemset set item where
+        -- a `contains` b
         contains  :: set item -> set item -> Bool
         setSize   :: set item -> Int
         listItems :: set item -> [item]
+
         -- returns the elements contained in the first argument
         --                                   and not the second
         itemsetDiff :: set item -> set item -> [item]
