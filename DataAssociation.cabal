@@ -9,6 +9,7 @@ data-dir: ""
 library
     build-depends:   base -any
                    , containers -any
+                   , split -any
     default-language: Haskell2010
     hs-source-dirs: src
     default-extensions: MultiParamTypeClasses
@@ -21,6 +22,7 @@ library
                      DataAssociation.APriori
                      DataAssociation.SimpleRulesGenerator
                      DataAssociation.Utils
+                     WekaData
 --    other-modules:
 
 --executable apriori
