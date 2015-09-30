@@ -18,7 +18,7 @@ import DataAssociation.Utils
 
 mineAssociationRules :: ( LargeItemsetsExtractor set it
                         , AssociationRulesGenerator set it) =>
-    MinSupport -> MinConfidence -> [set it] -> [AssocRule it]
+    MinSupport -> MinConfidence -> [set it] -> [AssocRule set it]
 
 mineAssociationRules ms mc = uncurry (generateAssociationRules mc) . preservingArg (findLargeItemsets ms)
 

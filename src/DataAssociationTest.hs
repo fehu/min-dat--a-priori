@@ -25,4 +25,5 @@ run = do rawData <- readWekaData filename
                                           (MinConfidence 0.75)
                                           itemsets
 
-         print rules
+         sequence_ $ do rule <- rules
+                        return $ print rule

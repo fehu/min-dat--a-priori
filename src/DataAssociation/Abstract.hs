@@ -19,7 +19,7 @@ class (Itemset set it) =>
 
 class (Itemset set it) =>
     AssociationRulesGenerator set it where
-        generateAssociationRules :: MinConfidence -> [set it] -> Map (set it) Float -> [AssocRule it]
+        generateAssociationRules :: MinConfidence -> [set it] -> Map (set it) Float -> [AssocRule set it]
 
 
 

@@ -18,9 +18,10 @@ import GHC.Float
 instance (Ord (set it), Ord it, Itemset set it) =>
     AssociationRulesGenerator set it where
         generateAssociationRules minconf transactions largeItemsets =
-            error ("subsets size = " ++ show (length subsets))
-            where (subsets, _) = subsetsFiltered transactions largeItemsets minconf
-            -- TODO
+            do let (parentAndSubsets, _) = subsetsFiltered transactions largeItemsets minconf
+               (parent, subsets) <- parentAndSubsets
+               subset <- subsets
+               return $ AssocRule subset (newItemset $ itemsetDiff parent subset)
 
 
 subsetsFiltered :: (Ord (set it), Itemset set it) =>

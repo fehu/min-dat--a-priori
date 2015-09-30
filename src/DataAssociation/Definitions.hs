@@ -32,8 +32,8 @@ class (Eq (set item), Show (set item), Show item) =>
 newtype MinSupport    = MinSupport Float
 newtype MinConfidence = MinConfidence Float
 
-data AssocRule item = AssocRule{ ruleFrom    :: [item]
-                               , ruleFollows :: [item]
-                               }
-                    deriving Show
+data AssocRule set item = AssocRule{ ruleFrom    :: set item
+                                   , ruleFollows :: set item
+                                   }
+                        deriving Show
 
