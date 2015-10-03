@@ -1,3 +1,5 @@
+{-# OPTIONS_HADDOCK hide #-}
+
 module DataAssociationTest ( run ) where
 
 import WekaData
