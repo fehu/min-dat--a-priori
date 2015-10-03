@@ -5,8 +5,9 @@ Description : Implements /A-Priory/ Large Itemsets extraction.
 License     : MIT
 Stability   : development
 
-__A-Priory__ Large 'Itemset's extraction.
-See <http://rakesh.agrawal-family.com/papers/vldb94apriori.pdf>.
+__A-Priory__ Large 'Itemset's extraction. See <http://rakesh.agrawal-family.com/papers/vldb94apriori.pdf>.
+
+Defines the __APriori__ instance of 'LargeItemsetsExtractor'.
 -}
 
 module DataAssociation.APriori where
@@ -21,10 +22,10 @@ import DataAssociation.Utils
 import DataAssociation.Abstract
 
 -----------------------------------------------------------------------------
--- | The __APriori__ instance. Defined in "DataAssociation.APriori". Based on 'apriory'.
+-- | The __APriori__ instance. Defined in "DataAssociation.APriori". Based on 'apriori'.
 instance (Ord (set it), Ord it, Itemset set it) =>
     LargeItemsetsExtractor set it where
-        findLargeItemsets minsup rawdata = apriory minsup tr seeds Map.empty
+        findLargeItemsets minsup rawdata = apriori minsup tr seeds Map.empty
             where tr = (rawdata, length rawdata)
                   itemsCount = sortingGroupBy id length (concatMap listItems rawdata)
                   satisfying = filter f itemsCount
@@ -34,47 +35,47 @@ instance (Ord (set it), Ord it, Itemset set it) =>
 
 -----------------------------------------------------------------------------
 -- | generate Large itemsets with a-priory algorithm. (Figure 1 in the article)
-apriory :: (Ord (set it), Ord it, Itemset set it) =>
+apriori :: (Ord (set it), Ord it, Itemset set it) =>
     MinSupport
     -> ([set it], Int)      -- ^ /transactions/ and their count
     -> [set it]             -- ^ seeds: L_{k-1}
     -> Map (set it) Float   -- ^ __large__ itemsets accumulator
     -> Map (set it) Float   -- ^ __large__ itemsets
 
-apriory mSup@(MinSupport minsup) tr@(transactions, transactionsSize) seeds acc =
+apriori mSup@(MinSupport minsup) tr@(transactions, transactionsSize) seeds acc =
     -- error ("cCount = " ++ show cCount)
     if Map.null next then acc
-                     else apriory mSup tr (Map.keys next) (Map.union acc next)
+                     else apriori mSup tr (Map.keys next) (Map.union acc next)
     where next = Map.filter (>= minsup) cCount
           cCount     = Map.map (calculateSupport transactionsSize) $
                                countSupported transactions candidates
-          candidates = aprioryGen seeds
+          candidates = aprioriGen seeds
 
 -----------------------------------------------------------------------------
--- | Apriori Candidate Generation. Generates the L_{k} from L_{k-1} (see 2.1.1 in the article).
+-- | Apriori Candidate Generation. Generates the L_{k} /candidates/ from L_{k-1} (see 2.1.1 in the article).
 --   Consists of `aprioryGenJoin` and `aprioryGenPrune`.
-aprioryGen      :: (Itemset set it, Ord it) => [set it] -- ^ L_{k-1}
-                                            -> [set it] -- ^ L_{k}
+aprioriGen      :: (Itemset set it, Ord it) => [set it] -- ^ L_{k-1}
+                                            -> [set it] -- ^ L_{k} /candidates/
 
 -- | Apriori Candidate Generation: Join.
-aprioryGenJoin  :: (Itemset set it, Ord it) => [set it] -- ^ L_{k-1}
+aprioriGenJoin  :: (Itemset set it, Ord it) => [set it] -- ^ L_{k-1}
                                             -> [set it] -- ^ L_{k} /candidates/
 
 -- | Apriori Candidate Generation: Prune.
-aprioryGenPrune :: (Itemset set it)         => [set it] -- ^ L_{k-1}
+aprioriGenPrune :: (Itemset set it)         => [set it] -- ^ L_{k-1}
                                             -> [set it] -- ^ L_{k} /candidates/
-                                            -> [set it] -- ^ L_{k}
+                                            -> [set it] -- ^ L_{k} /candidates/
 
 
-aprioryGen = uncurry aprioryGenPrune . preservingArg aprioryGenJoin
+aprioriGen = uncurry aprioriGenPrune . preservingArg aprioriGenJoin
 
-aprioryGenJoin seeds = do p <- seeds
+aprioriGenJoin seeds = do p <- seeds
                           q <- seeds
                           (diff1, diff2) <- maybeToList $ oneElementDifference p q
                           if diff1 < diff2 then return $ insertItem diff2 p
                                            else []
 
-aprioryGenPrune seeds generated = do g <- generated
+aprioriGenPrune seeds generated = do g <- generated
                                      [g | all (`elem` seeds) (allSubsetsOneShorter g)]
 
 
