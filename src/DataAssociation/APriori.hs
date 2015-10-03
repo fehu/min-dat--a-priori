@@ -1,8 +1,13 @@
------------------------------------------------------------------------------
--- A-Priory implements Large Itemsets extraction.
---
--- see http://rakesh.agrawal-family.com/papers/vldb94apriori.pdf
------------------------------------------------------------------------------
+{- |
+
+Module      : DataAssociation.APriori
+Description : Implements /A-Priory/ Large Itemsets extraction.
+License     : MIT
+Stability   : development
+
+__A-Priory__ Large 'Itemset's extraction.
+See <http://rakesh.agrawal-family.com/papers/vldb94apriori.pdf>.
+-}
 
 module DataAssociation.APriori where
 
@@ -15,7 +20,8 @@ import DataAssociation.Definitions
 import DataAssociation.Utils
 import DataAssociation.Abstract
 
-
+-----------------------------------------------------------------------------
+-- | The __APriori__ instance. Defined in "DataAssociation.APriori". Based on 'apriory'.
 instance (Ord (set it), Ord it, Itemset set it) =>
     LargeItemsetsExtractor set it where
         findLargeItemsets minsup rawdata = apriory minsup tr seeds Map.empty
@@ -27,12 +33,16 @@ instance (Ord (set it), Ord it, Itemset set it) =>
                   seeds = map (newItemset . (:[]) . fst) satisfying
 
 -----------------------------------------------------------------------------
--- generate Large itemsets with a-priory algorithm. (Figure 1 in the article)
+-- | generate Large itemsets with a-priory algorithm. (Figure 1 in the article)
 apriory :: (Ord (set it), Ord it, Itemset set it) =>
-    MinSupport -> ([set it], Int) -> [set it] -> Map (set it) Float -> Map (set it) Float
+    MinSupport
+    -> ([set it], Int)      -- ^ /transactions/ and their count
+    -> [set it]             -- ^ seeds: L_{k-1}
+    -> Map (set it) Float   -- ^ __large__ itemsets accumulator
+    -> Map (set it) Float   -- ^ __large__ itemsets
 
 apriory mSup@(MinSupport minsup) tr@(transactions, transactionsSize) seeds acc =
---    error ("cCount = " ++ show cCount)
+    -- error ("cCount = " ++ show cCount)
     if Map.null next then acc
                      else apriory mSup tr (Map.keys next) (Map.union acc next)
     where next = Map.filter (>= minsup) cCount
@@ -41,11 +51,20 @@ apriory mSup@(MinSupport minsup) tr@(transactions, transactionsSize) seeds acc =
           candidates = aprioryGen seeds
 
 -----------------------------------------------------------------------------
--- Apriori Candidate Generation. Consists of `join` and `prune`.
--- (2.1.1 in the article)
-aprioryGen      :: (Itemset set it, Ord it) => [set it] -> [set it]
-aprioryGenJoin  :: (Itemset set it, Ord it) => [set it] -> [set it]
-aprioryGenPrune :: (Itemset set it)         => [set it] -> [set it] -> [set it]
+-- | Apriori Candidate Generation. Generates the L_{k} from L_{k-1} (see 2.1.1 in the article).
+--   Consists of `aprioryGenJoin` and `aprioryGenPrune`.
+aprioryGen      :: (Itemset set it, Ord it) => [set it] -- ^ L_{k-1}
+                                            -> [set it] -- ^ L_{k}
+
+-- | Apriori Candidate Generation: Join.
+aprioryGenJoin  :: (Itemset set it, Ord it) => [set it] -- ^ L_{k-1}
+                                            -> [set it] -- ^ L_{k} /candidates/
+
+-- | Apriori Candidate Generation: Prune.
+aprioryGenPrune :: (Itemset set it)         => [set it] -- ^ L_{k-1}
+                                            -> [set it] -- ^ L_{k} /candidates/
+                                            -> [set it] -- ^ L_{k}
+
 
 aprioryGen = uncurry aprioryGenPrune . preservingArg aprioryGenJoin
 
@@ -60,12 +79,17 @@ aprioryGenPrune seeds generated = do g <- generated
 
 
 -----------------------------------------------------------------------------
--- returns Just ( element contained in the first argument and not the second
---              , element contained in the second argument and not the first)
---      if 1. the two sets have the same length
---         2. n-1 elements are the same
---         3. one element differs
--- returns Nothing otherwise
+{- | returns Just ( element contained in the first argument and not the second
+                  , element contained in the second argument and not the first)
+
+        if
+
+          (1) the two sets have the same length
+          2. n-1 elements are the same
+          3. one element differs
+
+returns Nothing otherwise
+-}
 oneElementDifference :: (Itemset set it) => set it -> set it -> Maybe (it, it)
 oneElementDifference x y =
     if sameLength && length difference == 1
