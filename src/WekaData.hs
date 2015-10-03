@@ -1,6 +1,13 @@
------------------------------------------------------------------------------
--- Works with weka *.arff data files.
------------------------------------------------------------------------------
+{-|
+
+Module      : WekaData
+Description : Works with weka *.arff data and files.
+License     : MIT
+Stability   : development
+
+Works with weka *.arff data and files.
+
+-}
 
 module WekaData (
 
@@ -18,18 +25,21 @@ import Data.Char
 import qualified Data.Map as Map
 import Control.Applicative
 
-data RawWekaData = RawWekaData { rwdName      :: String
-                               , rwdAttrs     :: [WekaDataAttribute]
-                               , rawWekaData  :: [[String]]
+-- | Data read from Weka @*.arff@ files.
+data RawWekaData = RawWekaData { rwdName      :: String              -- ^ relation
+                               , rwdAttrs     :: [WekaDataAttribute] -- ^ attributes
+                               , rawWekaData  :: [[String]]          -- ^ raw data
                                }
                     deriving Show
 
-data WekaDataAttribute = WekaAttrNum String
-                       | WekaAttrNom String [String]
+data WekaDataAttribute = WekaAttrNum String          -- ^ numeric attribute
+                       | WekaAttrNom String [String] -- ^ nominal attribute with its domain
                     deriving Show
 
 
-readWekaData :: String -> IO RawWekaData
+-- | Tries to read a *.arff file.
+readWekaData :: String          -- ^ file name
+             -> IO RawWekaData
 readWekaData filename = do lines <- splitOn "\n" <$> readFile filename
                                  -- same as fmap (splitOn "\n") (readFile filename)
                            return $ readWekaData' lines Nothing [] []
@@ -63,6 +73,7 @@ readWekaData' [] (Just name) attrs dta = RawWekaData name (reverse attrs) (rever
 dropComment = takeWhile (/= '%')
 dropSpaces = dropWhile isSpace
 
+-- | Reads weka attribute from a line.
 readWekaAttr :: String -> WekaDataAttribute
 readWekaAttr line | head l' == '{'            = WekaAttrNom name domain
                   | "numeric" `isPrefixOf` l' = WekaAttrNum name
@@ -76,9 +87,10 @@ readWekaAttr line | head l' == '{'            = WekaAttrNom name domain
 
 
 -----------------------------------------------------------------------------
--- in the data: _foreach_ NOM attribute with _singleton_ domain:
---      1. replace the domain value by attribute name
---      2. drop the '?' items
+-- | in the data: __foreach__ nominal attribute with /singleton/ domain:
+--
+--        1. replace the domain value by attribute name
+--        2. drop the '?' items
 wekaData2Sparse :: RawWekaData -> [[String]]
 wekaData2Sparse (RawWekaData  _ attrs dta) =
     do its <- dta
