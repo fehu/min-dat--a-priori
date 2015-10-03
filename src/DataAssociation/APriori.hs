@@ -5,7 +5,7 @@ Description : Implements /A-Priory/ Large Itemsets extraction.
 License     : MIT
 Stability   : development
 
-__A-Priory__ Large 'Itemset's extraction. See <http://rakesh.agrawal-family.com/papers/vldb94apriori.pdf>.
+__A-Priory__ Large 'Itemset's extraction. See __2.1__  in <http://rakesh.agrawal-family.com/papers/vldb94apriori.pdf>.
 
 Defines the __APriori__ instance of 'LargeItemsetsExtractor'.
 -}
