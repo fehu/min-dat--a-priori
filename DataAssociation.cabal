@@ -19,6 +19,7 @@ library
                      DataAssociation.Definitions
                      DataAssociation.Abstract
                      DataAssociation.APriori
+                     DataAssociation.APriori.Debug
                      DataAssociation.SimpleRulesGenerator
                      DataAssociation.Utils
                      DataAssociation.Itemset.SetImpl

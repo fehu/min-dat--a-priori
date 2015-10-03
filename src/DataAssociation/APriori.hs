@@ -16,6 +16,8 @@ import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Data.Maybe (maybeToList)
 
+import Control.Arrow
+
 import DataAssociation
 import DataAssociation.Definitions
 import DataAssociation.Utils
@@ -25,37 +27,65 @@ import DataAssociation.Abstract
 -- | The __APriori__ instance. Defined in "DataAssociation.APriori". Based on 'apriori'.
 instance (Ord (set it), Ord it, Itemset set it) =>
     LargeItemsetsExtractor set it where
-        findLargeItemsets minsup rawdata = apriori minsup tr seeds Map.empty
+        findLargeItemsets minsup@(MinSupport msup) rawdata = apriori minsup tr seeds
             where tr = (rawdata, length rawdata)
-                  itemsCount = sortingGroupBy id length (concatMap listItems rawdata)
-                  satisfying = filter f itemsCount
-                  f = sufficientSupport minsup (length rawdata) . snd
+                  itemsSup = sortingGroupBy id
+                                            (calculateSupport (snd tr) . length)
+                                            (concatMap listItems rawdata)
+                  satisfying = filter ((>= msup) . snd) itemsSup
                   -- itemsets of size 1 with sufficient support
-                  seeds = map (newItemset . (:[]) . fst) satisfying
+                  seeds = Map.fromList $ map ((newItemset . (:[]) . fst) &&& snd) satisfying
 
 -----------------------------------------------------------------------------
 -- | generate Large itemsets with a-priory algorithm. (Figure 1 in the article)
 apriori :: (Ord (set it), Ord it, Itemset set it) =>
     MinSupport
     -> ([set it], Int)      -- ^ /transactions/ and their count
-    -> [set it]             -- ^ seeds: L_{k-1}
-    -> Map (set it) Float   -- ^ __large__ itemsets accumulator
+    -> Map (set it) Float   -- ^ seeds L_{k-1} with the corresponding support
     -> Map (set it) Float   -- ^ __large__ itemsets
 
-apriori mSup@(MinSupport minsup) tr@(transactions, transactionsSize) seeds acc =
-    -- error ("cCount = " ++ show cCount)
-    if Map.null next then acc
-                     else apriori mSup tr (Map.keys next) (Map.union acc next)
+apriori minsup transactionsWithSize seeds =
+    fst $ apriori' minsup transactionsWithSize seeds Map.empty []
+
+-----------------------------------------------------------------------------
+-- | inner `apriori` implementation with debugging capacity
+apriori' :: (Ord (set it), Ord it, Itemset set it) =>
+    MinSupport
+    -> ([set it], Int)                                  -- ^ /transactions/ and their count
+    -> Map (set it) Float                               -- ^ seeds L_{k-1} with the corresponding support
+    -> Map (set it) Float                               -- ^ __large__ itemsets accumulator
+    -> [AprioriDebugData set it]                        -- ^ debug data accumulator
+    -> (Map (set it) Float, [AprioriDebugData set it ]) -- ^ (__large__ itemsets, debug data)
+
+apriori' mSup@(MinSupport minsup) tr@(transactions, transactionsSize) seeds acc debugAcc =
+    if Map.null next then (acc, reverse debugAcc)
+                     else apriori' mSup tr next (Map.union acc next) (dd:debugAcc)
     where next = Map.filter (>= minsup) cCount
           cCount     = Map.map (calculateSupport transactionsSize) $
                                countSupported transactions candidates
-          candidates = aprioriGen seeds
+          (joined, pruned) = aprioriGen' $ Map.keys seeds
+          candidates = pruned
+          dd = AprioriDebugData (Map.assocs seeds) joined pruned
+
+
+-- | APriori debug data container
+data AprioriDebugData set it = AprioriDebugData {
+  dSeeds :: [(set it, Float)] -- ^ debug: apriori seeds
+, dJoin  :: [set it]          -- ^ debug: apriori joined
+, dPrune :: [set it]          -- ^ debug: apriori prined
+}
+
 
 -----------------------------------------------------------------------------
 -- | Apriori Candidate Generation. Generates the L_{k} /candidates/ from L_{k-1} (see 2.1.1 in the article).
 --   Consists of `aprioryGenJoin` and `aprioryGenPrune`.
 aprioriGen      :: (Itemset set it, Ord it) => [set it] -- ^ L_{k-1}
                                             -> [set it] -- ^ L_{k} /candidates/
+
+-----------------------------------------------------------------------------
+-- | Inner Apriori Candidate Generation with debugging capacity.
+aprioriGen'     :: (Itemset set it, Ord it) => [set it]             -- ^ L_{k-1}
+                                            -> ([set it], [set it]) -- ^ results of (join, prune)
 
 -- | Apriori Candidate Generation: Join.
 aprioriGenJoin  :: (Itemset set it, Ord it) => [set it] -- ^ L_{k-1}
@@ -67,7 +97,11 @@ aprioriGenPrune :: (Itemset set it)         => [set it] -- ^ L_{k-1}
                                             -> [set it] -- ^ L_{k} /candidates/
 
 
-aprioriGen = uncurry aprioriGenPrune . preservingArg aprioriGenJoin
+aprioriGen' sets = (joined, pruned)
+    where ((_, joined), pruned) = preservingArg (uncurry aprioriGenPrune)
+                                  . preservingArg aprioriGenJoin $ sets
+
+aprioriGen = snd . aprioriGen'
 
 aprioriGenJoin seeds = do p <- seeds
                           q <- seeds
