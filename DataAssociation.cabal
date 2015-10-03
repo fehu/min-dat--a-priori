@@ -15,7 +15,6 @@ library
     default-extensions: MultiParamTypeClasses
                         FlexibleInstances
                         UndecidableInstances
-                        ExistentialQuantification
     exposed-modules: DataAssociation
                      DataAssociation.Definitions
                      DataAssociation.Abstract
