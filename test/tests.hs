@@ -16,9 +16,11 @@ module Main (
     main
 ) where
 
-import Test.DocTest
+import AprioriSpec
+
+--import Test.DocTest
 
 main :: IO ()
-main = doctest ["-isrc", "src/Main.hs"]
+main = undefined --  doctest ["-isrc", "src/Main.hs"]
 
 
