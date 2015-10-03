@@ -1,9 +1,16 @@
------------------------------------------------------------------------------
--- Generates rules by analysing confidence of the subsets of Large itemsets
---
--- see http://rakesh.agrawal-family.com/papers/vldb94apriori.pdf
------------------------------------------------------------------------------
+{- |
 
+Module      : DataAssociation.SimpleRulesGenerator
+Description : Associasion Rules Generator.
+License     : MIT
+Stability   : development
+
+Generates rules by analysing confidence of the subsets of __large__ itemsets.
+
+see __1.1__ in <http://rakesh.agrawal-family.com/papers/vldb94apriori.pdf>.
+
+Defines the __SimpleRulesGenerator__ instance of AssociationRulesGenerator.
+-}
 module DataAssociation.SimpleRulesGenerator where
 
 import DataAssociation.Definitions
@@ -15,6 +22,9 @@ import qualified Data.Map as Map
 import Control.Arrow( (&&&) )
 import GHC.Float
 
+-----------------------------------------------------------------------------
+-- | The __SimpleRulesGenerator__ instance. Defined in "DataAssociation.SimpleRulesGenerator".
+--   Based on 'subsetsFiltered'.
 instance (Ord (set it), Ord it, Itemset set it) =>
     AssociationRulesGenerator set it where
         generateAssociationRules minconf transactions largeItemsets =
@@ -23,12 +33,14 @@ instance (Ord (set it), Ord it, Itemset set it) =>
                subset <- subsets
                return $ AssocRule subset (newItemset $ itemsetDiff parent subset)
 
-
+-----------------------------------------------------------------------------
+-- | Generates subsets of __large__ itemsets with sufficient confidence
 subsetsFiltered :: (Ord (set it), Itemset set it) =>
-    [set it] ->
-    Map (set it) Float ->
-    MinConfidence ->
-    ([(set it, [set it])], Map (set it) Float)
+    [set it]                -- ^ /transactions/
+    -> Map (set it) Float   -- ^ __large__ itemsets {L_{1}, ..., L_{N}} with corresponding support
+    -> MinConfidence        -- ^ minimal confidence for rules
+    -> ([(set it, [set it])], Map (set it) Float)   -- ^ ([(/parent/ from L_{?}, its subsets with sufficient confidence)],
+                                                    --    support cache)
 subsetsFiltered transactions initialParents mS@(MinConfidence minconf) =
     inner (Map.keys initialParents) [] initialParents
     where trSize = length transactions
