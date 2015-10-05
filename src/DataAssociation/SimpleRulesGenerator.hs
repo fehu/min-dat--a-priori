@@ -46,7 +46,7 @@ generateAssociationRules' minconf transactions largeItemsets =
        let spdiff = newItemset $ itemsetDiff parent subset
        let rule = AssocRule subset spdiff
        let sup  = cache ! parent
-       let conf = sup / (cache ! spdiff)
+       let conf = sup / (cache ! subset)
        return (rule, conf, sup)
 
 -----------------------------------------------------------------------------
