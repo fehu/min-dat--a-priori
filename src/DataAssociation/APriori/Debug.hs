@@ -11,8 +11,9 @@ Only exports some /A-Priory/ debugging stuff.
 
 module DataAssociation.APriori.Debug (
 
-  AprioriDebugData
+  AprioriDebugData(..)
 , apriori'
+, runApriori
 
 ) where
 

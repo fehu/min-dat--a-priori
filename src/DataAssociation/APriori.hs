@@ -27,14 +27,18 @@ import DataAssociation.Abstract
 -- | The __APriori__ instance. Defined in "DataAssociation.APriori". Based on 'apriori'.
 instance (Ord (set it), Ord it, Itemset set it) =>
     LargeItemsetsExtractor set it where
-        findLargeItemsets minsup@(MinSupport msup) rawdata = apriori minsup tr seeds
-            where tr = (rawdata, length rawdata)
-                  itemsSup = sortingGroupBy id
-                                            (calculateSupport (snd tr) . length)
-                                            (concatMap listItems rawdata)
-                  satisfying = filter ((>= msup) . snd) itemsSup
-                  -- itemsets of size 1 with sufficient support
-                  seeds = Map.fromList $ map ((newItemset . (:[]) . fst) &&& snd) satisfying
+        findLargeItemsets minsup = fst . runApriori minsup
+
+
+runApriori minsup@(MinSupport msup) rawdata = apriori' minsup tr seeds Map.empty []
+    where tr = (rawdata, length rawdata)
+          itemsSup = sortingGroupBy id
+                                    (calculateSupport (snd tr) . length)
+                                    (concatMap listItems rawdata)
+          satisfying = filter ((>= msup) . snd) itemsSup
+          -- itemsets of size 1 with sufficient support
+          seeds = Map.fromList $ map ((newItemset . (:[]) . fst) &&& snd) satisfying
+
 
 -----------------------------------------------------------------------------
 -- | generate Large itemsets with a-priory algorithm. (Figure 1 in the article)

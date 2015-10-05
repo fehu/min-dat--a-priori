@@ -13,6 +13,8 @@ module DataAssociation.Itemset.SetImpl (
 
   Itemsets
 
+, Set
+
 ) where
 
 import DataAssociation.Definitions

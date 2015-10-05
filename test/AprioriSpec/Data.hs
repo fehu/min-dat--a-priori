@@ -1,31 +1,23 @@
------------------------------------------------------------------------------
+-- |
+--
 -- Module      :  AprioriSpec.Data
 -- License     :  MIT
------------------------------------------------------------------------------
+
 
 module AprioriSpec.Data (
 
   AprioriTestData(..)
-, AprioriTestRun(..)
+, AprioriDebugData(..)
 
 ) where
 
 
 import DataAssociation.Definitions
+import DataAssociation.APriori.Debug
 
-
-data AprioriTestData = AprioriTestData{
-  tTransactions :: [[String]]
+data AprioriTestData set it = AprioriTestData{
+  tTransactions :: [set it]
 , tMinsup  :: MinSupport
 , tMinconf :: MinConfidence
-, tRuns :: [AprioriTestRun]
+, tRuns    :: [AprioriDebugData set it]
 }
-
-data AprioriTestRun = AprioriTestRun{
-  tSeeds :: [([String], Int)]
-, tJoin  :: [[String]]
-, tPrune :: [[String]]
-}
-
-
-
