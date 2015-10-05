@@ -15,10 +15,12 @@ module AprioriSpec.Data.TiloBalkeExample (
 
 ) where
 
-import Control.Arrow (first)
+import Control.Arrow (first, second)
+import GHC.Float
 
 import AprioriSpec.Data
 import DataAssociation.Definitions
+import DataAssociation.Utils
 import DataAssociation.Itemset.SetImpl
 
 -- | the example
@@ -28,9 +30,11 @@ testData = AprioriTestData (map newItemset testTransactions)
                            (MinConfidence undefined)
                            runs'
     where runs' = do AprioriDebugData seeds joined pruned  <- runs
-                     return $ AprioriDebugData (map (first newItemset) seeds)
+                     return $ AprioriDebugData (map (first newItemset . second support) seeds)
                                                (map newItemset joined)
                                                (map newItemset pruned)
+          transactionsSize = length testTransactions
+          support          = (/ int2Float transactionsSize)
 
 -- | test transactions
 testTransactions = [ [1, 3, 4]
