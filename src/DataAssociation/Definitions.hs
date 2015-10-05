@@ -34,6 +34,9 @@ class (Eq (set item), Show (set item), Show item) =>
         insertItem   :: item -> set item -> set item
         deleteItemAt :: Int  -> set item -> set item
 
+        -- | splits first (n-1) elements and the last
+        splitInit :: set item -> (set item, item)
+
         -- | creates an itemset from a list of items
         newItemset :: [item] -> set item
 

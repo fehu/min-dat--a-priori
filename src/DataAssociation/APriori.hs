@@ -109,7 +109,7 @@ aprioriGen = snd . aprioriGen'
 
 aprioriGenJoin seeds = do p <- seeds
                           q <- seeds
-                          (diff1, diff2) <- maybeToList $ oneElementDifference p q
+                          (diff1, diff2) <- maybeToList $ lastElementDifference p q -- oneElementDifference -- TODO ASK
                           if diff1 < diff2 then return $ insertItem diff2 p
                                            else []
 
@@ -137,5 +137,26 @@ oneElementDifference x y =
     where sameLength  = setSize x == setSize y
           difference  = itemsetDiff x y
           difference2 = itemsetDiff y x
+
+
+{- | returns Just ( element contained in the first argument and not the second
+                  , element contained in the second argument and not the first)
+
+        if
+
+          (1) the two sets have the same length
+          2. n-1 elements are the same
+          3. one element differs
+
+returns Nothing otherwise
+-}
+lastElementDifference :: (Itemset set it) => set it -> set it -> Maybe (it, it)
+lastElementDifference x y =
+    if sameLength && xInit == yInit
+        then Just (xLast, yLast)
+        else Nothing
+    where sameLength = setSize x == setSize y
+          (xInit, xLast) = splitInit x
+          (yInit, yLast) = splitInit y
 
 

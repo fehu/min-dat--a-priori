@@ -19,6 +19,7 @@ module DataAssociation.Itemset.SetImpl (
 
 import DataAssociation.Definitions
 import Data.Set
+import Data.Tuple(swap)
 
 -- | Implementation of 'Itemset' by 'Data.Set'.
 type Itemsets it = [Set it]
@@ -33,4 +34,5 @@ instance (Ord it, Show it) =>
         insertItem = insert
         deleteItemAt = deleteAt
         itemsetDiff x y = toList $ difference x y
+        splitInit = swap . deleteFindMax
 
