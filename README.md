@@ -1,6 +1,7 @@
 A-Priory
 ========
 
+_A project for master studies at ITESM_
 
 [TO DO](todo.md)
 
