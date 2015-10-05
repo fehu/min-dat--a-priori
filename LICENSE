@@ -1,4 +1,4 @@
-except test/AprioriSpec/Data/TiloBalkeExample.hs
+except test/TestData/TiloBalkeExample.hs
 
 
 The MIT License (MIT)
