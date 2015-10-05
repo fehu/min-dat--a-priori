@@ -19,7 +19,8 @@ import DataAssociation.Utils
 
 import Data.Map (Map, member, (!))
 import qualified Data.Map as Map
-import Control.Arrow( (&&&) )
+import qualified Data.Set as Set
+import Control.Arrow( (&&&), second )
 import GHC.Float
 
 -----------------------------------------------------------------------------
@@ -56,33 +57,33 @@ subsetsFiltered :: (Ord (set it), Itemset set it) =>
     -> MinConfidence        -- ^ minimal confidence for rules
     -> ([(set it, [set it])], Map (set it) Float)   -- ^ ([(/parent/ from L_{?}, its subsets with sufficient confidence)],
                                                     --    support cache)
-subsetsFiltered transactions initialParents mS@(MinConfidence minconf) =
-    inner (Map.keys initialParents) [] initialParents
+subsetsFiltered transactions parents mS@(MinConfidence minconf) =
+    inner (Map.keys parents) [] parents
     where trSize = length transactions
-          inner [] acc supportCache = (acc, supportCache)
-          inner parents@(h:_) acc supportCache
-            | setSize h == 1 = (acc, supportCache)
-            | otherwise = inner next (acc ++ subs) (Map.unions (supportCache:cacheUpd))
-                where next = concatMap snd subs
-                      subs = map filterSufficientConfidence subs'
-                      filterSufficientConfidence (parent, xs) =
-                        let children = do (set, sup) <- xs
-                                          if (supportCache ! parent) / sup >= minconf
-                                           then return set
-                                           else []
-                        in (parent, children)
-                      (subs', cacheUpd) = unzip $ map extract subsEtc
-                      extract (large, xs) = ((large, setsC), Map.unions upds)
+          inner [] acc supportCache           = (map (second Set.toList) acc, supportCache)
+          inner (p:parents') acc supportCache =
+            inner parents' ((p, Set.map fst subs):acc) (Map.union supportCache cacheUpd)
+                where subs = Set.filter filterSufficientConfidence (Set.fromList subs')
+                      filterSufficientConfidence (set, sup) = (supportCache ! p) / sup >= minconf
+                      (subs', cacheUpd) = extract subsEtc
+                      extract xs = (setsC, Map.unions upds)
                         where (setsC, upds) = unzip $ do (set, sup, upd) <- xs
                                                          return ((set, sup), upd)
-                      subsEtc = map (id &&& (map supportEtc . allSubsetsOneShorter)) parents
-                      supportEtc set = (set, support, cacheUpdate)
-                            where (support, cacheUpdate) =
-                                    if set `member` supportCache
-                                    then (supportCache ! set, Map.empty)
-                                    else let sup = Map.map (calculateSupport trSize)
-                                                           (countSupported transactions [set])
-                                         in (sup ! set, sup)
+                      subsEtc = supportEtc $ nonemptySubsets (Set.singleton p) Set.empty
+                      nonemptySubsets ps acc =
+                            if setSize (Set.findMin ps) == 1
+                                then acc
+                                else nonemptySubsets subs (Set.union acc subs)
+                            where subs = Set.fromList $ concatMap allSubsetsOneShorter (Set.toList ps)
+                      supportEtc sets = do
+                            set <- Set.toList sets
+                            let (support, cacheUpdate) =
+                                        if set `member` supportCache
+                                        then (supportCache ! set, Map.empty)
+                                        else let sup = Map.map (calculateSupport trSize)
+                                                               (countSupported transactions [set])
+                                             in (sup ! set, sup)
+                            return (set, support, cacheUpdate)
 
 
 
