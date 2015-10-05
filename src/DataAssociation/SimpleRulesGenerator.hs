@@ -27,11 +27,26 @@ import GHC.Float
 --   Based on 'subsetsFiltered'.
 instance (Ord (set it), Ord it, Itemset set it) =>
     AssociationRulesGenerator set it where
-        generateAssociationRules minconf transactions largeItemsets =
-            do let (parentAndSubsets, _) = subsetsFiltered transactions largeItemsets minconf
-               (parent, subsets) <- parentAndSubsets
-               subset <- subsets
-               return $ AssocRule subset (newItemset $ itemsetDiff parent subset)
+        generateAssociationRules minconf transactions largeItemsets = rules
+            where (rules, _, _) = unzip3 $  generateAssociationRules' minconf transactions largeItemsets
+
+
+-- | SimpleRulesGenerator debug.
+generateAssociationRules' :: (Itemset set it, Ord (set it), Ord it) =>
+                             MinConfidence       -- ^ minimal confidence for accepting a rule
+                          -> [set it]            -- ^ original full list of 'Itemset's
+                          -> Map (set it) Float  -- ^ __large__ 'Itemset's with the corresponding support
+                          -> [(AssocRule set it, Float, Float)]  -- ^ @[(association rule, confidence, support)]@
+
+generateAssociationRules' minconf transactions largeItemsets =
+    do let (parentAndSubsets, cache) = subsetsFiltered transactions largeItemsets minconf
+       (parent, subsets) <- parentAndSubsets
+       subset <- subsets
+       let spdiff = newItemset $ itemsetDiff parent subset
+       let rule = AssocRule subset spdiff
+       let sup  = cache ! parent
+       let conf = sup / (cache ! spdiff)
+       return (rule, conf, sup)
 
 -----------------------------------------------------------------------------
 -- | Generates subsets of __large__ itemsets with sufficient confidence

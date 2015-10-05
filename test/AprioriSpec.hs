@@ -1,7 +1,7 @@
 -- |
 --
 -- Module      : AprioriSpec
--- Description : Tests for "".
+-- Description : Tests for "DataAssociation.APriori".
 -- License     :  MIT
 -- Stability   : development
 
@@ -12,7 +12,7 @@ import Test.Hspec
 import Text.Printf
 import Data.List
 
-import AprioriSpec.Data
+import TestData
 import DataAssociation.Definitions
 import DataAssociation.APriori.Debug
 
@@ -30,7 +30,7 @@ spec ex =
 matchWithExample :: (Itemset set it, Ord (set it), Ord it) =>
     AprioriTestData set it -> [Spec]
 
-matchWithExample (AprioriTestData transactions minsup minconf runs) = beforeAll printDD testNRuns : testRuns
+matchWithExample (AprioriTestData transactions minsup runs) = beforeAll printDD testNRuns : testRuns
     where (res, ddata) = runApriori minsup transactions
           testNRuns = it "has the same number of runs" $ length runs `shouldBe` length ddata
           testRuns  = do (AprioriDebugData seeds joined pruned, AprioriDebugData seeds' joined' pruned', i) <- zip3 runs ddata [1..]
@@ -41,7 +41,7 @@ matchWithExample (AprioriTestData transactions minsup minconf runs) = beforeAll 
                           ]
           printDD = sequence_ $
             do (AprioriDebugData seeds joined pruned, AprioriDebugData seeds' joined' pruned', i) <- zip3 runs ddata [1..]
-               return $ do putStrLn $ "On Run " ++ show i ++ ":\n"
+               return $ do putStrLn $ "\nOn Run " ++ show i ++ ":\n"
                            putStrLn $ "Seeds  (Example): " ++ show seeds
                            putStrLn $ "Seeds  (Result) : " ++ show seeds'
                            putStrLn ""
@@ -51,5 +51,6 @@ matchWithExample (AprioriTestData transactions minsup minconf runs) = beforeAll 
                            putStrLn $ "Pruned (Example): " ++ show pruned
                            putStrLn $ "Pruned (Result) : " ++ show pruned'
                            putStrLn "\n"
+
 
 
