@@ -1,7 +1,7 @@
 TO DO
 =====
 
-- [ ] fix rules repetitions;
+- [x] fix rules repetitions;
 - [ ] what to do with the last attribute in supermarket.arff?
 
-- [ ] adapt 'apriori' for inner testing
+- [x] adapt 'apriori' for inner testing
