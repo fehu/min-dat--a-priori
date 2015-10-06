@@ -65,10 +65,7 @@ subsetsFiltered transactions parents mS@(MinConfidence minconf) =
             inner parents' ((p, Set.map fst subs):acc) (Map.union supportCache cacheUpd)
                 where subs = Set.filter filterSufficientConfidence (Set.fromList subs')
                       filterSufficientConfidence (set, sup) = (supportCache ! p) / sup >= minconf
-                      (subs', cacheUpd) = extract subsEtc
-                      extract xs = (setsC, Map.unions upds)
-                        where (setsC, upds) = unzip $ do (set, sup, upd) <- xs
-                                                         return ((set, sup), upd)
+                      (subs', cacheUpd) = second Map.unions (unzip subsEtc)
                       subsEtc = supportEtc $ nonemptySubsets (Set.singleton p) Set.empty
                       nonemptySubsets ps acc =
                             if setSize (Set.findMin ps) == 1
@@ -83,7 +80,7 @@ subsetsFiltered transactions parents mS@(MinConfidence minconf) =
                                         else let sup = Map.map (calculateSupport trSize)
                                                                (countSupported transactions [set])
                                              in (sup ! set, sup)
-                            return (set, support, cacheUpdate)
+                            return ((set, support), cacheUpdate)
 
 
 
