@@ -76,7 +76,7 @@ apriori' mSup@(MinSupport minsup) tr@(transactions, transactionsSize) seeds acc 
 data AprioriDebugData set it = AprioriDebugData {
   dSeeds :: [(set it, Float)] -- ^ debug: apriori seeds
 , dJoin  :: [set it]          -- ^ debug: apriori joined
-, dPrune :: [set it]          -- ^ debug: apriori prined
+, dPrune :: [set it]          -- ^ debug: apriori pruned
 }
 
 
@@ -123,7 +123,7 @@ aprioriGenPrune seeds generated = do g <- generated
 
         if
 
-          (1) the two sets have the same length
+          1. the two sets have the same length
           2. n-1 elements are the same
           3. one element differs
 
@@ -144,9 +144,9 @@ oneElementDifference x y =
 
         if
 
-          (1) the two sets have the same length
-          2. n-1 elements are the same
-          3. one element differs
+          1. the two sets have the same length
+          2. first @n-1@ (sorted) elements of bpth are the same
+          3. last elements differ
 
 returns Nothing otherwise
 -}

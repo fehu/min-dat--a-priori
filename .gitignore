@@ -21,3 +21,7 @@ cabal.sandbox.config
 ### Leksah
 *.lkshs
 *.lkshw
+
+### Misc
+tmp/
+

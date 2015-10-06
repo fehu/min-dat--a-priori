@@ -51,8 +51,8 @@ sortingGroupBy f g = map (f . head &&& g)
 
 
 -----------------------------------------------------------------------------
--- | given an itemset of length l, returns a set of itemsets of length (l - 1)
---                                       that are subsets of the original one
+-- | iven an itemset of length l, returns a set of itemsets of length (l - 1)
+--                                       that are subsets of the original one.
 allSubsetsOneShorter :: (Itemset set it) => set it -> [set it]
 allSubsetsOneShorter set = liftM (`deleteItemAt` set) [0 .. setSize set - 1]
 -- this equals to:
@@ -61,8 +61,8 @@ allSubsetsOneShorter set = liftM (`deleteItemAt` set) [0 .. setSize set - 1]
 
 
 -----------------------------------------------------------------------------
--- | count the number of occurences of each set in the transactions
---   the 'occurence' is when the set is a subset of the transaction
+-- | Count the number of occurences of each set in the transactions.
+--   An 'occurence' is when the set is a subset of the transaction.
 countSupported :: (Ord (set it), Itemset set it) =>
     [set it] -> [set it] -> Map (set it) Int
 
