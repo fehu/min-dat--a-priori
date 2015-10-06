@@ -46,9 +46,9 @@ readWekaData filename = do lines <- splitOn "\n" <$> readFile filename
 
 readWekaData' :: [String] -> Maybe String -> [WekaDataAttribute] -> [[String]] -> RawWekaData
 
--- ignore comments
+-- ignore comments and empty lines
 readWekaData' (l:lines) name attrs dta
-    | "%" `isPrefixOf` l = readWekaData' lines name attrs dta
+    | "%" `isPrefixOf` l || null l = readWekaData' lines name attrs dta
 
 -- handling name
 readWekaData' (l:lines) Nothing [] []
