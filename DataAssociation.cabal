@@ -3,7 +3,7 @@ version: 0.2.0.1
 cabal-version: 1.12
 build-type: Simple
 license: MIT
-license-file: ""
+license-file: "LICENSE"
 data-dir: ""
 
 library
