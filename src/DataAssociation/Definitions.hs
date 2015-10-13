@@ -51,5 +51,9 @@ newtype MinConfidence = MinConfidence Float
 data AssocRule set item = AssocRule{ ruleFrom    :: set item -- ^ implicating itemset
                                    , ruleFollows :: set item -- ^ implication
                                    }
-                        deriving (Show, Ord, Eq)
+                        deriving (Ord, Eq)
+
+instance (Show item, Itemset set item) =>
+    Show (AssocRule set item) where
+        show (AssocRule from follows) = show (listItems from) ++ " ==> " ++ show (listItems follows)
 
