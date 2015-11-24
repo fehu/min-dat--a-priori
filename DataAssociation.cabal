@@ -23,6 +23,7 @@ library
                      DataAssociation.SimpleRulesGenerator.Debug
                      DataAssociation.Utils
                      DataAssociation.Itemset.SetImpl
+                     DataAssociation.PostProcess
 --    other-modules:
 
 executable mine-rules

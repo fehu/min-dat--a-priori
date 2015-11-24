@@ -18,6 +18,9 @@ module DataAssociation.Definitions (
 
 ) where
 
+import Data.Function ( on )
+import Control.Arrow ( (&&&) )
+
 
 -- | An itemset.
 class (Eq (set item), Show (set item), Show item) =>
@@ -50,10 +53,20 @@ newtype MinConfidence = MinConfidence Float
 -- | Association Rule
 data AssocRule set item = AssocRule{ ruleFrom    :: set item -- ^ implicating itemset
                                    , ruleFollows :: set item -- ^ implication
+                                   , confidence  :: Float
+                                   , support     :: Float
                                    }
-                        deriving (Ord, Eq)
+--                        deriving (Ord, Eq)
+
+instance (Eq (set item)) =>
+    Eq (AssocRule set item) where
+        (==) = (==) `on` (ruleFrom &&& ruleFollows)
+
+instance (Ord (set item)) =>
+    Ord (AssocRule set item) where
+        compare = compare `on` (ruleFrom &&& ruleFollows)
 
 instance (Show item, Itemset set item) =>
     Show (AssocRule set item) where
-        show (AssocRule from follows) = show (listItems from) ++ " ==> " ++ show (listItems follows)
+        show (AssocRule from follows _ _) = show (listItems from) ++ " ==> " ++ show (listItems follows)
 

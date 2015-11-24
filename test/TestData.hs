@@ -10,7 +10,6 @@ module TestData (
 , AprioriDebugData(..)
 
 , AssocRulesTestData(..)
-, AssocRulesTestEntry(..)
 
 ) where
 
@@ -29,11 +28,5 @@ data AssocRulesTestData set it = AssocRulesTestData{
   trTransactions :: [set it]
 , tLargeItemset  :: (set it, Float)
 , tMinconf       :: MinConfidence
-, tRules         :: [AssocRulesTestEntry set it]
-}
-
-data AssocRulesTestEntry set it = AssocRulesTestEntry{
-  tRule :: AssocRule set it
-, tConf :: Float
-, tSup  :: Float
+, tRules         :: [AssocRule set it]
 }

@@ -73,11 +73,11 @@ rulesExample :: AssocRulesTestData Set Int
 rulesExample = AssocRulesTestData (map newItemset testTransactions)
                                   (newItemset [2, 3, 5], 0.5)
                                   (MinConfidence 0.5)
-    [ AssocRulesTestEntry (AssocRule (newItemset [2, 3]) (newItemset [5])) 1                    0.5
-    , AssocRulesTestEntry (AssocRule (newItemset [2, 5]) (newItemset [3])) (int2Float 50 / 75)  0.5
-    , AssocRulesTestEntry (AssocRule (newItemset [3, 5]) (newItemset [2])) 1                    0.5
-    , AssocRulesTestEntry (AssocRule (newItemset [2]) (newItemset [3, 5])) (int2Float 50 / 75)  0.5
-    , AssocRulesTestEntry (AssocRule (newItemset [3]) (newItemset [2, 5])) (int2Float 50 / 75)  0.5
-    , AssocRulesTestEntry (AssocRule (newItemset [5]) (newItemset [2, 3])) (int2Float 50 / 75)  0.5
+    [ AssocRule (newItemset [2, 3]) (newItemset [5])    1                    0.5
+    , AssocRule (newItemset [2, 5]) (newItemset [3])    (int2Float 50 / 75)  0.5
+    , AssocRule (newItemset [3, 5]) (newItemset [2])    1                    0.5
+    , AssocRule (newItemset [2])    (newItemset [3, 5]) (int2Float 50 / 75)  0.5
+    , AssocRule (newItemset [3])    (newItemset [2, 5]) (int2Float 50 / 75)  0.5
+    , AssocRule (newItemset [5])    (newItemset [2, 3]) (int2Float 50 / 75)  0.5
     ]
 

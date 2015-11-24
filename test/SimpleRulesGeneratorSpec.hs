@@ -15,7 +15,9 @@ import qualified Data.Set as Set
 import Data.List (find)
 import Data.Maybe(maybeToList)
 import qualified Data.Map as Map
+import Data.Function ( on )
 import Control.Monad
+import Control.Arrow ( (&&&) )
 
 import DataAssociation.Definitions
 import DataAssociation.SimpleRulesGenerator.Debug
@@ -33,12 +35,12 @@ spec ex = describe "DataAssociation.SimpleRulesGenerator" $
 matchRuleExample (AssocRulesTestData transactions largeItemsetWithSupport minconf rules) =
     it "should return the same set of rules" (null notInRules && null notInRes) : testRules
     where res = generateAssociationRules' minconf transactions (Map.fromList [largeItemsetWithSupport])
-          cres   = Set.fromList $ map fst' res
-          crules = Set.fromList $ map tRule rules
-          fst'  (r,_,_) = r
-          snd'  (_,c,_) = c
-          thrd' (_,_,s) = s
-          notInRules = filter ((`Set.notMember` crules) . fst') res
+          cres   = Set.fromList res
+          crules = Set.fromList rules
+--          fst'  (r,_,_) = r
+--          snd'  (_,c,_) = c
+--          thrd' (_,_,s) = s
+          notInRules = filter (`Set.notMember` crules) res
           notInRes   = filter (`Set.notMember` cres) (Set.toList crules)
 --          TODO beforeAll printNotIn
 --          printNotIn = do putStrLn $ "not in the example: " ++ show notInRules
@@ -46,12 +48,12 @@ matchRuleExample (AssocRulesTestData transactions largeItemsetWithSupport mincon
 --                                if null notInRules || null notInRes
 --                        then
 --                        else mzero
-          testRules = do (AssocRulesTestEntry rule conf sup) <- rules
-                         let mbResRule = find ((==) rule . fst') res
-                         let dmain = it "was found" $ fmap fst'  mbResRule `shouldBe` Just rule
+          testRules = do rule@(AssocRule _ _ conf sup) <- rules
+                         let mbResRule = find (rule == ) res -- (ruleFrom &&& ruleFollows)
+                         let dmain = it "was found" $  mbResRule `shouldBe` Just rule
                          let dext = do resRule <- maybeToList mbResRule
-                                       [  it "has same confidence" $ fmap snd'  mbResRule `shouldBe` Just conf
-                                        , it "has same support"    $ fmap thrd' mbResRule `shouldBe` Just sup
+                                       [  it "has same confidence" $ fmap confidence  mbResRule `shouldBe` Just conf
+                                        , it "has same support"    $ fmap support mbResRule `shouldBe` Just sup
                                         ]
                          return $ describe (show rule) $ sequence_ $ dmain : dext
 
