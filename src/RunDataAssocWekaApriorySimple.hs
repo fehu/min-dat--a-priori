@@ -20,7 +20,7 @@ import DataAssociation.SimpleRulesGenerator
 
 type Filename = String
 
---
+
 run :: Filename -> MinSupport -> MinConfidence -> IO ()
 run filename minsup minconf =
     do rawData <- readWekaData filename

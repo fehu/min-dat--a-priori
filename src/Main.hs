@@ -31,12 +31,8 @@ parse ["-h"] = usage >> exitSuccess
 parse [fname, msup, mconf] = do
     let minsup  = maybe minsupError  MinSupport    $ maybeReadInUnit msup
     let minconf = maybe minconfError MinConfidence $ maybeReadInUnit mconf
---    if not . doesFileExist $ fname then error $ "File " ++ fname ++ "not found"
---                                   else mzero
     run fname minsup minconf
 parse _ = unknownCmd >> usage >> exitFailure
-
---parse [fname, msup, mconf] | (maybeRead msup :: Maybe Float) <= 1 = putStrLn ""
 
 
 
