@@ -38,10 +38,6 @@ module DataAssociation.Explore.UI.Web.Application (
 
 , AprioriConfigUI(..)
 
-, ReqPath
-
-
-
 ) where
 
 import DataAssociation
@@ -108,10 +104,8 @@ type AprioriWebAppState cache = ApplicationState cache (MinSupport, MinConfidenc
 
 -----------------------------------------------------------------------------
 
-type ReqPath = [String]
 
 class ReactiveWebElemConf u where
---    reqPath  :: u -> ReqPath
     reqParam :: u -> String
 
 class (ReactiveWebElemConf u) =>
@@ -148,15 +142,15 @@ instance StatusUI StatusList where
 data RawDataTextAreaDialog = RawDataTextAreaDialog{
     rawDataSendDescr :: [(String, String)] -> IO ()
   , rawDataHtml      :: Html
-  , rawDataReqPath   :: ReqPath
-  , rawDataReqParam  :: String
 }
 
 instance RawDataUI RawDataTextAreaDialog where
     sendDataDescription = rawDataSendDescr
 
-instance ReactiveWebElemConf RawDataTextAreaDialog where
-    reqParam = rawDataReqParam
+
+
+
+instance ReactiveWebElemConf RawDataTextAreaDialog where reqParam _ = "raw-data"
 
 instance ReactiveWebElem RawDataTextAreaDialog (AprioriWebAppState cache) where
     type ReactiveWebElemArg = [(String, JSValue)]
@@ -168,14 +162,9 @@ instance ReactiveWebElem RawDataTextAreaDialog (AprioriWebAppState cache) where
 
 -----------------------------------------------------------------------------
 
-data AprioriConfigUI = AprioriConfigUI{
-    aprioryConfigHtml     :: Html
-  , apriofiConfigReqParam :: String
-  , apriofiConfigReqPath  :: ReqPath
-}
+newtype AprioriConfigUI = AprioriConfigUI Html
 
-instance ReactiveWebElemConf AprioriConfigUI where
-    reqParam = apriofiConfigReqParam
+instance ReactiveWebElemConf AprioriConfigUI where reqParam _ = "apriori-params"
 
 --instance ReactiveWebElem AprioriConfigUI (AprioriWebAppState cache) where
 --    reqParse u mbTxt s = maybe s (\p -> s { programConfigState = p }) mbParams
@@ -190,24 +179,15 @@ instance ReactiveWebElemConf AprioriConfigUI where
 
 -----------------------------------------------------------------------------
 
-data PostProcessFilterBuilderUI = PostProcessFilterBuilderUI{
-    ppFilterHtml    :: Html
-  , ppFilterReqPath :: ReqPath
-}
+newtype PostProcessFilterBuilderUI = PostProcessFilterBuilderUI Html
 
 -----------------------------------------------------------------------------
 
-data PostProcessSortBuilderUI = PostProcessSortBuilderUI {
-    ppSortHtml    :: Html
-  , ppSortReqPath :: ReqPath
-}
+newtype PostProcessSortBuilderUI = PostProcessSortBuilderUI Html
 
 -----------------------------------------------------------------------------
 
-data PostProcessGroupBuilderUI = PostProcessGroupBuilderUI {
-    ppGroupHtml    :: Html
-  , ppGroupReqPath :: ReqPath
-}
+newtype PostProcessGroupBuilderUI = PostProcessGroupBuilderUI Html
 
 -----------------------------------------------------------------------------
 
@@ -216,7 +196,6 @@ data ShowProcessedDataUI set it = ShowProcessedDataUI {
   , showDataHtml   :: Html
 }
 
-instance ShowUI ShowProcessedDataUI where
-    sendDataToShow = sendDataToUI
+instance ShowUI ShowProcessedDataUI where sendDataToShow = sendDataToUI
 
 

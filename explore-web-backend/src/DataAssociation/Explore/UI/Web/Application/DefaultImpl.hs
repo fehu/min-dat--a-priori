@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 -----------------------------------------------------------------------------
 --
 -- Module      :  DataAssociation.Explore.UI.Web.Application.DefaultImpl
@@ -27,31 +29,72 @@ module DataAssociation.Explore.UI.Web.Application.DefaultImpl (
 
 ) where
 
+import Prelude hiding (head, div, span)
 import DataAssociation
 import DataAssociation.Explore.UI.Web.Application
+import DataAssociation.Explore.UI.Web.Render
 
 import Data.IORef
 import qualified Data.Set as Set
 
+import Text.Blaze.Html5
+import qualified Text.Blaze.Html5.Attributes as A
 
 
-webApp = do
-    rawDataUI  <- rawDataTextAreaDialog
-    aprioriUI  <- aprioriConfigUI
-    ppFilterUI <- postProcessFilterBuilderUI
-    ppSortUI   <- postProcessSortBuilderUI
-    ppGroupUI  <- postProcessGroupBuilderUI
 
-    let showUI = showProcessedDataUI
-    let statUI = statusList
+webApp = WebApp rawDataTextAreaDialog
+                aprioriConfigUI
+                postProcessFilterBuilderUI
+                postProcessSortBuilderUI
+                postProcessGroupBuilderUI
+                showProcessedDataUI
+                statusList
 
-    return $ WebApp rawDataUI
-                    aprioriUI
-                    ppFilterUI
-                    ppSortUI
-                    ppGroupUI
-                    showUI
-                    statUI
+instance RenderableWebPage WebApp where
+    reqPath _ = ["explore", "apriori"]
+
+    renderWebPage app = html $ do
+        pageHead
+        body $ do
+            header $ h1 "Explore: Apriori"
+            section ! A.id "config" $ do
+                dataConfigHtml
+                filterConfigHtml
+                sortAndGroupConfigHtml
+            section ! A.id "apply" $
+                button "Apply" ! A.onclick loadButtonClicked
+            section ! A.id "rules" $ do
+                h2 "Rules"
+                span "TODO" ! A.class_ "todo"
+
+
+pageHead = head $ do
+    link ! A.rel "stylesheet" ! A.type_ "text/css" ! A.href "/static/apriori.css"
+    script "" ! A.src "//code.jquery.com/jquery-2.1.4.min.js"
+    script "var wSocket = new WebSocket('ws://localhost:9160/')"
+
+
+
+dataConfigHtml = div ! A.class_ "data" $ do
+    h3 "Data"
+    button "Load Data" ! A.onclick loadDataClicked
+    hr
+    span "" ! A.class_ "info"
+
+filterConfigHtml = div ! A.class_ "filter" $ do
+    h3 "Filters"
+    span "TODO" ! A.class_ "todo"
+
+sortAndGroupConfigHtml = div ! A.class_ "sort-group" $ do
+    h3 "Sort"
+    span "TODO" ! A.class_ "todo"
+    hr
+    h3 "Group"
+    span "TODO" ! A.class_ "todo"
+
+
+loadDataClicked   = "TODO: upload data"
+loadButtonClicked = "TODO: apply changes"
 
 
 
@@ -60,57 +103,19 @@ statusList = StatusList{
   , statusHtml = undefined
 }
 
-rawDataTextAreaDialog = do
-    rdRef <- newIORef []
-
-    return RawDataTextAreaDialog{
-        rawDataReqParam  = "raw-data"
-      , rawDataReqPath   = ["load-raw-data"]
-      , rawDataSendDescr = undefined
-      , rawDataHtml      = undefined
-    }
-
-aprioriConfigUI = do
-    msRef <- newIORef (MinSupport 0)
-    mcRef <- newIORef (MinConfidence 0)
-
-    return AprioriConfigUI {
---        aprioriMinSupRef     = msRef
---      , aprioriMinConfRef    = mcRef
-        apriofiConfigReqPath = ["set-apriori-params"]
-      , aprioryConfigHtml = undefined
-    }
+rawDataTextAreaDialog = RawDataTextAreaDialog{
+    rawDataSendDescr = undefined
+  , rawDataHtml      = undefined
+}
 
 
-ppPath = "set-post-process"
+aprioriConfigUI = AprioriConfigUI undefined
 
+postProcessFilterBuilderUI = PostProcessFilterBuilderUI undefined
 
-postProcessFilterBuilderUI = do
-    ref <- newIORef Set.empty
+postProcessSortBuilderUI = PostProcessSortBuilderUI undefined
 
-    return PostProcessFilterBuilderUI{
---        ppFilterRef     = ref
-        ppFilterReqPath = [ppPath, "filter"]
-      , ppFilterHtml = undefined
-    }
-
-postProcessSortBuilderUI = do
-    ref <- newIORef []
-
-    return PostProcessSortBuilderUI{
---        ppSortRef     = ref
-        ppSortReqPath = [ppPath, "sort"]
-      , ppSortHtml = undefined
-    }
-
-postProcessGroupBuilderUI = do
-    ref <- newIORef Nothing
-
-    return PostProcessGroupBuilderUI{
---        ppGroupRef     = ref
-        ppGroupReqPath = [ppPath, "group"]
-      , ppGroupHtml = undefined
-    }
+postProcessGroupBuilderUI = PostProcessGroupBuilderUI undefined
 
 showProcessedDataUI = ShowProcessedDataUI{
     sendDataToUI = undefined,

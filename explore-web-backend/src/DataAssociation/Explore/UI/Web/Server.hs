@@ -1,4 +1,4 @@
--- {-# LANGUAGE OverloadedStrings, FlexibleContexts #-}
+ {-# LANGUAGE OverloadedStrings #-}
 
 -----------------------------------------------------------------------------
 --
@@ -20,7 +20,28 @@ module DataAssociation.Explore.UI.Web.Server (
 
 ) where
 
+import DataAssociation.Explore.UI.Web.Application
+import DataAssociation.Explore.UI.State
+import DataAssociation.Explore.UI.Web.Render
 
-server = undefined
+import Web.Spock
 
+import Text.Blaze.Html.Renderer.Text
+import Data.List (intercalate)
+import qualified Data.Text as T
 
+import qualified Data.Text.Lazy as ST
+import Control.Monad.IO.Class
+
+import System.FilePath
+
+listenToReactiveElems :: (MonadIO m) => [SomeRenderableWebPage] -> SpockT m ()
+listenToReactiveElems  elems = sequence_ handlers
+    where handlers = do SomeRenderableWebPage e <- elems
+                        return $ get (static . intercalate "/" $ reqPath e)
+                                     (html . ST.toStrict . renderHtml $ renderWebPage e)
+
+server :: Int -> [SomeRenderableWebPage] -> [FilePath] -> IO ()
+server port pages staticRoot = runSpock port . spockT id $ do
+    listenToReactiveElems pages
+    get "static/apriori.css" $ file "apriori.css" $ joinPath (staticRoot ++ ["apriori.css"])

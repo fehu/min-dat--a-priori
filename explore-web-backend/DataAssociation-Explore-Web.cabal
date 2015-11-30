@@ -20,15 +20,20 @@ library
   build-depends:       base >= 4.6,
                        DataAssociation,
                        DataAssociation-Explore,
-                       WekaData >= 0.2.0.1,
-                       websockets >= 0.9.6.0,
-                       blaze-html >= 0.8.1.0,
-                       containers >= 0.5,
-                       json >= 0.9.1,
-                       text >= 1.2.1
+                       WekaData     >= 0.2.0.1,
+                       websockets   >= 0.9.6.0,
+                       Spock        >= 0.10.0.0,
+                       wai          >= 3.0.4.0,
+                       blaze-html   >= 0.8.1.0,
+                       containers   >= 0.5,
+                       json         >= 0.9.1,
+                       text         >= 1.2.1,
+                       transformers >= 0.3.0,
+                       filepath     >= 1.4.0
   hs-source-dirs:      src
   exposed-modules:     DataAssociation.Explore.UI.Web.Application
                        DataAssociation.Explore.UI.Web.Application.DefaultImpl
+                       DataAssociation.Explore.UI.Web.Render
                        DataAssociation.Explore.UI.Web.Server
                        DataAssociation.Explore.UI.Web.WebsocketServer
   -- other-modules:
@@ -41,9 +46,10 @@ executable explore-apriori-sever
     build-depends: DataAssociation
                  , DataAssociation-Explore
                  , DataAssociation-Explore-Web
-                 , WekaData >= 0.2.0.1
-                 , base >= 4.6
-                 , websockets >= 0.9.6.0
+                 , WekaData     >= 0.2.0.1
+                 , base         >= 4.6
+                 , websockets   >= 0.9.6.0
+                 , Spock        >= 0.10.0.0
 --                 , containers >= 0.5
     main-is: AprioriExploreServer.hs
     buildable: True
