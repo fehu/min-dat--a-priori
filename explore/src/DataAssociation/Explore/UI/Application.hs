@@ -12,7 +12,6 @@
 --
 -- |
 --
------------------------------------------------------------------------------
 
 module DataAssociation.Explore.UI.Application(
 
@@ -21,7 +20,6 @@ module DataAssociation.Explore.UI.Application(
 
 , StatusUI(..)
 , RawDataUI(..)
-, PostProcessUI(..)
 , ShowUI(..)
 
 ) where
@@ -30,6 +28,8 @@ import DataAssociation
 import DataAssociation.Explore.Program
 import DataAssociation.PostProcess.Descriptor
 
+
+-----------------------------------------------------------------------------
 
 class ApplicationUITypes a where
     type StatusAppUI
@@ -52,27 +52,22 @@ class ApplicationUI a where
     uiShow       :: a -> ShowAppUI
 
 
---data RawDataAppUI = forall u . RawDataUI u => RawDataAppUI u
-
+-----------------------------------------------------------------------------
 
 class StatusUI u where
     type StatusMessage
 
     showStatus :: u -> StatusMessage -> IO ()
 
+-----------------------------------------------------------------------------
+
 class RawDataUI u where
-    type RawData
+    sendDataDescription :: u -> [(String, String)] -> IO ()
 
-    getRawData :: u -> IO RawData
-    setRawData :: u -> RawData -> IO()
-
-
-class PostProcessUI u d where
-    getPostProcess :: u -> IO [d]
-    setPostProcess :: u -> [d] -> IO()
-
+-----------------------------------------------------------------------------
 
 class ShowUI u where
     sendDataToShow :: u set it -> [[AssocRule set it]] -> IO()
 
+-----------------------------------------------------------------------------
 

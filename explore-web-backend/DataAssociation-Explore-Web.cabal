@@ -20,11 +20,13 @@ library
   build-depends:       base >= 4.6,
                        DataAssociation,
                        DataAssociation-Explore,
---                       WekaData >= 0.2.0.1,
+                       WekaData >= 0.2.0.1,
                        Spock >= 0.10.0.0,
                        blaze-html >= 0.8.1.0,
                        containers >= 0.5,
-                       text >= 1.2.1.0
+                       text >= 1.2.1.0,
+                       hvect >= 0.3.0,
+                       transformers >= 0.3.0
   hs-source-dirs:      src
   exposed-modules:     DataAssociation.Explore.UI.Web.Application
                        DataAssociation.Explore.UI.Web.Application.DefaultImpl

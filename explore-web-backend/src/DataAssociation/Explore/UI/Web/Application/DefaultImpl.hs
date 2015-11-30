@@ -34,6 +34,7 @@ import Data.IORef
 import qualified Data.Set as Set
 
 
+
 webApp = do
     rawDataUI  <- rawDataTextAreaDialog
     aprioriUI  <- aprioriConfigUI
@@ -63,9 +64,10 @@ rawDataTextAreaDialog = do
     rdRef <- newIORef []
 
     return RawDataTextAreaDialog{
-        rawDataRef     = rdRef
-      , rawDataReqPath = ["load-raw-data"]
-      , rawDataHtml    = undefined
+        rawDataReqParam  = "raw-data"
+      , rawDataReqPath   = ["load-raw-data"]
+      , rawDataSendDescr = undefined
+      , rawDataHtml      = undefined
     }
 
 aprioriConfigUI = do
@@ -73,9 +75,9 @@ aprioriConfigUI = do
     mcRef <- newIORef (MinConfidence 0)
 
     return AprioriConfigUI {
-        aprioriMinSupRef     = msRef
-      , aprioriMinConfRef    = mcRef
-      , apriofiConfigReqPath = ["set-apriori-params"]
+--        aprioriMinSupRef     = msRef
+--      , aprioriMinConfRef    = mcRef
+        apriofiConfigReqPath = ["set-apriori-params"]
       , aprioryConfigHtml = undefined
     }
 
@@ -87,8 +89,8 @@ postProcessFilterBuilderUI = do
     ref <- newIORef Set.empty
 
     return PostProcessFilterBuilderUI{
-        ppFilterRef     = ref
-      , ppFilterReqPath = [ppPath, "filter"]
+--        ppFilterRef     = ref
+        ppFilterReqPath = [ppPath, "filter"]
       , ppFilterHtml = undefined
     }
 
@@ -96,8 +98,8 @@ postProcessSortBuilderUI = do
     ref <- newIORef []
 
     return PostProcessSortBuilderUI{
-        ppSortRef     = ref
-      , ppSortReqPath = [ppPath, "sort"]
+--        ppSortRef     = ref
+        ppSortReqPath = [ppPath, "sort"]
       , ppSortHtml = undefined
     }
 
@@ -105,8 +107,8 @@ postProcessGroupBuilderUI = do
     ref <- newIORef Nothing
 
     return PostProcessGroupBuilderUI{
-        ppGroupRef     = ref
-      , ppGroupReqPath = [ppPath, "group"]
+--        ppGroupRef     = ref
+        ppGroupReqPath = [ppPath, "group"]
       , ppGroupHtml = undefined
     }
 
