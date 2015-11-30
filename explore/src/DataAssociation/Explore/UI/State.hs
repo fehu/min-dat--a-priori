@@ -23,6 +23,9 @@ module DataAssociation.Explore.UI.State (
 , getProgramConfigState
 , setProgramConfigState
 
+, getCacheState
+, setCacheState
+
 ) where
 
 --import Control.Concurrent.MVar
@@ -82,4 +85,6 @@ instance PostProcessInnerRepr (ApplicationState cache conf) RuleGroup where
 getProgramConfigState = readIORef . programConfigState
 setProgramConfigState = writeIORef . programConfigState
 
+getCacheState = readIORef . cacheState
+setCacheState = writeIORef . cacheState
 
