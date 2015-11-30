@@ -1,11 +1,13 @@
 
 wSocket.onclose = function(e) { showStatus('error', 'Connction to server closed!') };
 wSocket.onmessage = function(msg) {
-    console.log('received message: '.concat(msg.data));
+//     console.log('received message: '.concat(msg.data));
     obj = JSON.parse(msg.data);                    
-    console.log('obj = '.concat(obj));
+//     console.log('obj = '.concat(obj));
     sTime = obj['showMillis']['Just'];
-    if (sTime != undefined) showTime = parseInt(sTime)
+    
+    if (sTime != undefined) showTime = parseInt(sTime);
+    else showTime = undefined;
     
     switch(obj['type']) {                     
       case 'error':                           

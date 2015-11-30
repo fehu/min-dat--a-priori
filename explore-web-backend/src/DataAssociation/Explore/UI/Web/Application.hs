@@ -36,6 +36,9 @@ module DataAssociation.Explore.UI.Web.Application (
 , AprioriWebAppState(..)
 
 , StatusMsg(..)
+, statusUpdMsg
+, statusErrMsg
+
 , StatusList(..)
 , RawDataTextAreaDialog(..)
 , PostProcessFilterBuilderUI(..)
@@ -161,6 +164,9 @@ data StatusMsg = StatusMsg{
 
 statusUpdMsg :: String -> StatusMsg
 statusUpdMsg msg = StatusMsg msg "status" (Just 5000) 1
+
+statusErrMsg :: String -> StatusMsg
+statusErrMsg msg = StatusMsg msg "error" Nothing 99
 
 data StatusList = StatusList{
     statusShow :: WS.Connection -> StatusMsg -> IO ()

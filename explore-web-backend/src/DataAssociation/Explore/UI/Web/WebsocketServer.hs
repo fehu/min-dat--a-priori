@@ -30,6 +30,7 @@ import qualified Network.WebSockets as WS
 
 import Control.Concurrent
 import Control.Monad (forever)
+import Control.Exception (handle, SomeException)
 
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -53,9 +54,11 @@ wsserver app iState pending = do
     state <- newStateWithInitial iState
     putStrLn "created new state"
 
-    let statusReporter = StatusReporter (showStatus (uiStatus app) conn)
+    let reportStatus = showStatus (uiStatus app) conn
+    let statusReporter = StatusReporter reportStatus
 
-    forever $ do
+    forever $ handle (\e -> reportStatus . statusErrMsg $ show (e :: SomeException))
+            $ do
         msg   <- WS.receiveData conn
         putStrLn $ "processing message: " ++ T.unpack msg
 

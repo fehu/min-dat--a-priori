@@ -171,13 +171,13 @@ messageToJson (StatusMsg msg tpe millis priority) = toJSObject [
 
 statusList = StatusList{
     statusShow = \conn -> WS.sendTextData conn . T.pack . encode . messageToJson
-  , statusHtml = div "" ! A.id "statuses"  -- span "TODO: Status" ! A.class_ "todo"
+  , statusHtml = div "" ! A.id "statuses"
 }
 
 rawDataTextAreaDialog = RawDataTextAreaDialog{
     rawDataSendDescr = undefined
 
-  , rawDataHtml = do -- div ! A.class_ "data col-md-4" $ do
+  , rawDataHtml = do
         mkBootstrapButton "Load Data" "btn"
             ! customAttribute "data-toggle" "modal"
             ! customAttribute "data-target" "#upload-data-dialog"
