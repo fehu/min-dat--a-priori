@@ -15,13 +15,18 @@
 module Main ( main ) where
 
 
+import DataAssociation
 import DataAssociation.Explore.UI.Web.Server
-import DataAssociation.Explore.UI.Web.Application.DefaultImpl
+import DataAssociation.Explore.UI.Web.Application
+import DataAssociation.Explore.UI.State
+import qualified DataAssociation.Explore.UI.Web.Application.DefaultImpl as Impl
+import WekaData
 
-import Web.Spock
+import qualified Network.WebSockets as WS
 
 
 main = do
-    app <- webApp
-    runSpock 8080 $ server app
+    app <- Impl.webApp
+    let iState = InitialState undefined (RawWekaData "" [] []) (MinSupport 0, MinConfidence 0)
 
+    WS.runServer "0.0.0.0" 9160 $ server app iState

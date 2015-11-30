@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, FlexibleContexts #-}
 
 -----------------------------------------------------------------------------
 --
@@ -20,74 +20,47 @@ module DataAssociation.Explore.UI.Web.Server (
 
 ) where
 
-import DataAssociation.Explore.UI.Application
+import DataAssociation
 import DataAssociation.Explore.UI.Web.Application
+import DataAssociation.Explore.UI.State
+import WekaData
 
+import qualified Network.WebSockets as WS
 
-import Web.Spock
-import Text.Blaze.Html.Renderer.Utf8
-import Data.HVect
+import Control.Concurrent
+import Control.Monad (forever)
 
-import Data.List (intercalate)
+import Data.Map (Map)
+import qualified Data.Map as Map
 import qualified Data.Text as T
 
-import Control.Arrow
-import Control.Exception
-import Control.Monad.IO.Class
+import Text.JSON
+import Text.JSON.String
 
 
+server :: (ReactiveWebElemSelector app (AprioriWebAppState cache)) =>
+          app
+       -> InitialState cache RawWekaData (MinSupport, MinConfidence)
+       -> WS.ServerApp
+server app iState pending = do
+    conn <- WS.acceptRequest pending
+    WS.forkPingThread conn 30
+
+    state <- newStateWithInitial iState
+    putStrLn "created new state"
+
+    forever $ do
+        msg   <- WS.receiveData conn
+        putStrLn $ "processing message: " ++ T.unpack msg
+
+        let Right (JSObject obj) = runGetJSON readJSObject (T.unpack msg)
+        let jObj = fromJSObject obj
+        let Just (JSString eId) = lookup (elemNameParam app state) jObj
+
+        case reactiveWebElemByName app state $ fromJSString eId
+            of SomeReactiveWebElem e -> reqParse e jObj state
+
+        putStrLn "done"
 
 
-listenToReactiveElems :: [SomeReactiveWebElem state]
-                      -> SpockT m ()
-listenToReactiveElems  elems =undefined --  sequence_ handlers
-    where handlers = do SomeReactiveWebElem e <- elems
-                        return $ do mbP <- param . T.pack $ reqParam e
-                                    return  ( static . intercalate "/" $ reqPath e
-                                            , modifySession $ \s -> reqParse e mbP (s :: state)
-                                            )
-
---listenToReactiveElems elems = sequence_ handlers
---    where handlers = do SomeReactiveWebElem e <- elems
---                        return $ do mbP <- param . T.pack $ reqParam e
---                                    s   <- readSession
---                                    return $ post (static . intercalate "/" $ reqPath e)
---                                                  (return $ reqParse e s mbP)
-
---                         post (static . intercalate "/" $ reqPath e)
---                                            (reqParse e s )
-
-
---listenTo :: ReactiveWebElem u => u -> ActionCtxT ctx IO a
---listenTo u = post (static . intercalate "/" $ reqPath u) $ do
---    let f = reqParse u
---    p <- param . T.pack $ reqParam u
-
---    let res = fmap (const "ok") (f p) `catch` (\e -> return $ show (e :: SomeException))
-
-
-
---    text ""
-
---    return $ fmap (text . T.pack) res
-
-server app = spockT id $ do
-
-    let rawData = uiRawData app
-
-    post (static $ intercalate "/" . rawDataReqPath $ rawData) $ do
---        sentT <- param' "raw-data"
---        let wData = map T.unpack $ T.splitOn "\n" sentT
---        return $ setRawData rawData wData
-
-        text "ok"
-
---    let rawData         = (rawDataReqPath &&& rawDataHtml) . uiRawData
---    let aprioriConfig   = (apriofiConfigReqPath &&& aprioryConfigHtml). uiConfig
---    let postFilter      = (uiPostFilter
-
-    -- intercalate "/" .
-
---    get (static rawDataPath) $ lazyBytes . renderHtml . rawDataHtml $ uiRawData app
---        text $ T.concat ["requested ", "rawDataReqPath"]
 
