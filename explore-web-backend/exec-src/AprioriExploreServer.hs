@@ -23,6 +23,7 @@ import DataAssociation.Explore.UI.Web.Render
 import DataAssociation.Explore.UI.State
 import qualified DataAssociation.Explore.UI.Web.Application.DefaultImpl as Impl
 import WekaData
+import WekaData.Show.Full
 
 import Control.Concurrent (forkIO)
 import GHC.IO.Handle

@@ -1,2 +1,57 @@
 
-/* TODO */
+
+#upload-data-dialog-text {
+  width: 100%;
+  height: 400px;
+}
+
+
+header { 
+  background-color:black;
+  color:white;
+  text-align:center;
+  padding:5px;
+}
+
+h3 {
+  text-align:center;
+}
+
+/*#config div.col-md-4 {
+  border: s;
+}*/
+
+/*
+
+
+#config {
+    width:1000px;
+    padding:10px;       
+}
+
+#config .data {
+    width:300px;
+    float:left;
+    padding:10px;       
+}
+
+#config .filter {
+    width:300px;
+    float:left;
+    padding:10px;       
+}
+
+#config .sort-group {
+    width:300px;
+    float:left;
+    padding:10px;       
+}
+
+#apply {
+  
+}
+
+#rules {
+  
+}
+*/

@@ -2,6 +2,7 @@
            , FlexibleInstances
            , ExistentialQuantification
            , OverloadedStrings
+           , FlexibleContexts
          #-}
 
 -----------------------------------------------------------------------------
@@ -90,7 +91,9 @@ instance ApplicationUI WebApp where
     uiShow       (WebApp _ _ _ _ _ u _) = u
     uiStatus     (WebApp _ _ _ _ _ _ u) = u
 
-instance ReactiveWebElemSelector WebApp (AprioriWebAppState cache) where
+instance (Show WekaDataAttribute) =>
+    ReactiveWebElemSelector WebApp (AprioriWebAppState cache) where
+
     elemNameParam _ _ = "elem-id"
     reactiveWebElemByName a _ name =
         case name of "raw-data" -> SomeReactiveWebElem . uiRawData $ a
@@ -152,7 +155,9 @@ instance RawDataUI RawDataTextAreaDialog where
 
 instance ReactiveWebElemConf RawDataTextAreaDialog where reqParam _ = "raw-data"
 
-instance ReactiveWebElem RawDataTextAreaDialog (AprioriWebAppState cache) where
+instance (Show WekaDataAttribute) =>
+    ReactiveWebElem RawDataTextAreaDialog (AprioriWebAppState cache) where
+
     type ReactiveWebElemArg = [(String, JSValue)]
 
     reqParse u jobj state = setRawData state $ wekaDataFromLines lines
