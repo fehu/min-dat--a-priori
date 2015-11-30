@@ -3,7 +3,7 @@ version: 0.2.0.2
 cabal-version: 1.12
 build-type: Simple
 license: MIT
-license-file: "LICENSE"
+license-file: "../LICENSE"
 data-dir: ""
 
 library
@@ -24,6 +24,7 @@ library
                      DataAssociation.Utils
                      DataAssociation.Itemset.SetImpl
                      DataAssociation.PostProcess
+                     DataAssociation.PostProcess.Descriptor
 --    other-modules:
 
 executable mine-rules
