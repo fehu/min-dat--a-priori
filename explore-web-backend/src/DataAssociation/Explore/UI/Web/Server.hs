@@ -44,4 +44,8 @@ listenToReactiveElems  elems = sequence_ handlers
 server :: Int -> [SomeRenderableWebPage] -> [FilePath] -> IO ()
 server port pages staticRoot = runSpock port . spockT id $ do
     listenToReactiveElems pages
-    get "static/apriori.css" $ file "apriori.css" $ joinPath (staticRoot ++ ["apriori.css"])
+
+    let getResource path name = get path $ file name $ joinPath (staticRoot ++ [T.unpack name])
+
+    getResource "static/apriori.css" "apriori.css"
+    getResource "static/apriori.js"  "apriori.js"

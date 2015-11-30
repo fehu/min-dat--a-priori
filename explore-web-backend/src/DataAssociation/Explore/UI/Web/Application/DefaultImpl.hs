@@ -55,19 +55,17 @@ webApp = WebApp rawDataTextAreaDialog
 instance RenderableWebPage WebApp where
     reqPath _ = ["explore", "apriori"]
 
-    renderWebPage app = -- do
---        docType
+    renderWebPage app =
         html $ do
             pageHead
             body $ do
                 pageScripts
                 header $ h1 "Explore: Apriori"
-                elemHtml $ uiStatus app
                 div ! A.class_ "container" $ do
+                    elemHtml $ uiStatus app
                     section ! A.id "config"
                             ! A.class_ "span9" $
                         div ! A.class_ "row" $ do
---                            elemHtml $ uiRawData app
                             divFor2 "raw-data-and-conf"
                                     "Data"    (uiRawData app)
                                     "Apriori" (uiConfig app)
@@ -104,50 +102,8 @@ pageScripts = do
     script "" ! A.src "//code.jquery.com/jquery-2.1.4.min.js"
     script "" ! A.src "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
 
-    script $ toHtml scriptsJS
-
-scriptsJS :: String
-scriptsJS = "\nvar wSocket = new WebSocket('ws://localhost:9160/'); \n\
-            \wSocket.onclose = function(e) { alert('Connction to server closed!') };\n" ++
-            statusScriptsJS ++
-            "wSocket.onmessage = " ++ handleWsMessageJS ++ ";\n"
-
-
-statusScriptsJS = " closeBtn = '&lt;a class=\"close\" data-dismiss=\"alert\" \
-                  \                   href=\"#\"&gt;&times;&lt;/a&gt;'; \n\
-                  \ var showStatus = function(type, msg){     \n\
-                  \     var clazz = '';                       \n\
-                  \     var extra = '';                       \n\
-                  \     switch (type) {                       \n\
-                  \         case 'error':                     \n\
-                  \             clazz = 'alert-error';        \n\
-                  \             extra = '&lt;h4 class=\"alert-heading\"&gt;Error!&lt;/h4&gt;'; \n\
-                  \             break;                        \n\
-                  \         case 'ok': break;                 \n\
-                  \       };                                  \n\
-                  \     str = '&lt;div class=\"alert fade in '.concat(clazz).concat('\"&gt;');\n\
-                  \     str = str.concat(closeBtn).concat(msg).concat('&lt;/div&gt;');        \n\
-                  \     $(str).appendTo('#statuses');         \n\
-                  \  }                                        \n\
-                  \"
-
-handleWsMessageJS = "function(msg) {\n\
-    \ obj = JSON.parse(msg);                    \n\
-    \ switch(obj['type']) {                     \n\
-    \   case 'error':                           \n\
-    \        showStatus('error', obj['error']); \n\
-    \        break;                             \n\
-    \   case 'status':                          \n\
-    \       showStatus('ok', obj['status']);    \n\
-    \       break;                              \n\
-    \   case 'data-info':                       \n\
-    \       setDataInfo(obj['data-info']);      \n\
-    \       break;                              \n\
-    \   case 'rules':                           \n\
-    \       rulesUpdate(obj['rules']);          \n\
-    \       break;                              \n\
-    \  }                                        \n\
-    \ }"
+    script "var wSocket = new WebSocket('ws://localhost:9160/');"
+    script "" ! A.src "/static/apriori.js"
 
 
 divFor2 id n1 e1 n2 e2 =
@@ -157,17 +113,12 @@ divFor2 id n1 e1 n2 e2 =
         h3 n2
         elemHtml e2
 
---sortAndGroupConfigHtml = div ! A.class_ "sort-group col-md-4" $ do
---    h3 "Sort"
---
---    hr
---    h3 "Group"
---    span "TODO" ! A.class_ "todo"
 
 sendMessageObjJS :: [(String, String)] -> String
 sendMessageObjJS entries = "wSocket.send(JSON.stringify({" ++ obj ++ "}))"
     where obj = intercalate ","
               $ Prelude.map (\(k,v) -> show k ++ ":" ++ v) entries
+
 
 loadDataDialog = div     ! A.id "upload-data-dialog"
                          ! A.class_ "modal fade"
@@ -202,9 +153,7 @@ mkBootstrapCloseModalButton txt clazz =
         ! customAttribute "data-dismiss" "modal"
         ! customAttribute "aria-hidden" "true"
 
--- <h3 id="myModalLabel">Modal header</h3>
 
---loadDataClicked   = "TODO: upload data"
 loadButtonClicked = "TODO: apply changes"
 
 
