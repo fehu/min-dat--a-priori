@@ -27,6 +27,8 @@ module DataAssociation.Explore.UI.Web.Application (
 , SomeReactiveWebElem(..)
 , ReactiveWebElemSelector(..)
 
+, HtmlElem(..)
+
 , AprioriWebAppState(..)
 
 , StatusMsg(..)
@@ -107,6 +109,10 @@ type AprioriWebAppState cache = ApplicationState cache (MinSupport, MinConfidenc
 
 -----------------------------------------------------------------------------
 
+class HtmlElem e where
+    elemHtml :: e -> Html
+
+
 
 class ReactiveWebElemConf u where
     reqParam :: u -> String
@@ -127,6 +133,7 @@ class ReactiveWebElemSelector s state where
 
 data StatusMsg = StatusMsg{
     msgString     :: String
+  , msgType       :: String
   , msgShowMillis :: Maybe Int
   , msgPriority   :: Int
 }
@@ -135,6 +142,8 @@ data StatusList = StatusList{
     statusShow :: StatusMsg -> IO ()
   , statusHtml :: Html
 }
+
+instance HtmlElem StatusList where elemHtml = statusHtml
 
 instance StatusUI StatusList where
     type StatusMessage = StatusMsg
@@ -151,8 +160,7 @@ instance RawDataUI RawDataTextAreaDialog where
     sendDataDescription = rawDataSendDescr
 
 
-
-
+instance HtmlElem            RawDataTextAreaDialog where elemHtml = rawDataHtml
 instance ReactiveWebElemConf RawDataTextAreaDialog where reqParam _ = "raw-data"
 
 instance (Show WekaDataAttribute) =>
@@ -169,6 +177,7 @@ instance (Show WekaDataAttribute) =>
 
 newtype AprioriConfigUI = AprioriConfigUI Html
 
+instance HtmlElem            AprioriConfigUI where elemHtml (AprioriConfigUI h) = h
 instance ReactiveWebElemConf AprioriConfigUI where reqParam _ = "apriori-params"
 
 --instance ReactiveWebElem AprioriConfigUI (AprioriWebAppState cache) where
@@ -186,13 +195,22 @@ instance ReactiveWebElemConf AprioriConfigUI where reqParam _ = "apriori-params"
 
 newtype PostProcessFilterBuilderUI = PostProcessFilterBuilderUI Html
 
+instance HtmlElem PostProcessFilterBuilderUI where
+    elemHtml (PostProcessFilterBuilderUI h) = h
+
 -----------------------------------------------------------------------------
 
 newtype PostProcessSortBuilderUI = PostProcessSortBuilderUI Html
 
+instance HtmlElem PostProcessSortBuilderUI where
+    elemHtml (PostProcessSortBuilderUI h) = h
+
 -----------------------------------------------------------------------------
 
 newtype PostProcessGroupBuilderUI = PostProcessGroupBuilderUI Html
+
+instance HtmlElem PostProcessGroupBuilderUI where
+    elemHtml (PostProcessGroupBuilderUI h) = h
 
 -----------------------------------------------------------------------------
 
@@ -200,6 +218,8 @@ data ShowProcessedDataUI set it = ShowProcessedDataUI {
     sendDataToUI   :: [[AssocRule set it]] -> IO ()
   , showDataHtml   :: Html
 }
+
+instance HtmlElem (ShowProcessedDataUI set it) where elemHtml = showDataHtml
 
 instance ShowUI ShowProcessedDataUI where sendDataToShow = sendDataToUI
 

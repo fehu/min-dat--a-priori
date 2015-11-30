@@ -31,6 +31,7 @@ module DataAssociation.Explore.UI.Web.Application.DefaultImpl (
 
 import Prelude hiding (head, div, span)
 import DataAssociation
+import DataAssociation.Explore.UI.Application
 import DataAssociation.Explore.UI.Web.Application
 import DataAssociation.Explore.UI.Web.Render
 
@@ -54,19 +55,26 @@ webApp = WebApp rawDataTextAreaDialog
 instance RenderableWebPage WebApp where
     reqPath _ = ["explore", "apriori"]
 
-    renderWebPage app =
+    renderWebPage app = -- do
+--        docType
         html $ do
             pageHead
             body $ do
                 pageScripts
                 header $ h1 "Explore: Apriori"
+                elemHtml $ uiStatus app
                 div ! A.class_ "container" $ do
                     section ! A.id "config"
                             ! A.class_ "span9" $
                         div ! A.class_ "row" $ do
-                            dataConfigHtml
-                            filterConfigHtml
-                            sortAndGroupConfigHtml
+--                            elemHtml $ uiRawData app
+                            divFor2 "raw-data-and-conf"
+                                    "Data"    (uiRawData app)
+                                    "Apriori" (uiConfig app)
+                            elemHtml $ uiPostFilter app
+                            divFor2 "sort-group"
+                                    "Sort"  (uiPostSort app)
+                                    "Group" (uiPostGroup app)
                     hr
                     section ! A.id "apply"
                             ! A.class_ "span9" $
@@ -74,7 +82,7 @@ instance RenderableWebPage WebApp where
                     section ! A.id "rules"
                             ! A.class_ "span9" $ do
                         h2 "Rules"
-                        span "TODO" ! A.class_ "todo"
+                        elemHtml $ uiShow app
             loadDataDialog
 
 
@@ -96,28 +104,65 @@ pageScripts = do
     script "" ! A.src "//code.jquery.com/jquery-2.1.4.min.js"
     script "" ! A.src "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
 
-    script "var wSocket = new WebSocket('ws://localhost:9160/'); \
-           \wSocket.onclose = function(e) { alert('Connction to server closed!') }"
+    script $ toHtml scriptsJS
+
+scriptsJS :: String
+scriptsJS = "\nvar wSocket = new WebSocket('ws://localhost:9160/'); \n\
+            \wSocket.onclose = function(e) { alert('Connction to server closed!') };\n" ++
+            statusScriptsJS ++
+            "wSocket.onmessage = " ++ handleWsMessageJS ++ ";\n"
 
 
-dataConfigHtml = div ! A.class_ "data col-md-4" $ do
-    h3 "Data"
-    mkBootstrapButton "Load Data" "btn"
-        ! customAttribute "data-toggle" "modal"
-        ! customAttribute "data-target" "#upload-data-dialog"
-    hr
-    span "" ! A.class_ "info"
+statusScriptsJS = " closeBtn = '&lt;a class=\"close\" data-dismiss=\"alert\" \
+                  \                   href=\"#\"&gt;&times;&lt;/a&gt;'; \n\
+                  \ var showStatus = function(type, msg){     \n\
+                  \     var clazz = '';                       \n\
+                  \     var extra = '';                       \n\
+                  \     switch (type) {                       \n\
+                  \         case 'error':                     \n\
+                  \             clazz = 'alert-error';        \n\
+                  \             extra = '&lt;h4 class=\"alert-heading\"&gt;Error!&lt;/h4&gt;'; \n\
+                  \             break;                        \n\
+                  \         case 'ok': break;                 \n\
+                  \       };                                  \n\
+                  \     str = '&lt;div class=\"alert fade in '.concat(clazz).concat('\"&gt;');\n\
+                  \     str = str.concat(closeBtn).concat(msg).concat('&lt;/div&gt;');        \n\
+                  \     $(str).appendTo('#statuses');         \n\
+                  \  }                                        \n\
+                  \"
 
-filterConfigHtml = div ! A.class_ "filter col-md-4" $ do
-    h3 "Filters"
-    span "TODO" ! A.class_ "todo"
+handleWsMessageJS = "function(msg) {\n\
+    \ obj = JSON.parse(msg);                    \n\
+    \ switch(obj['type']) {                     \n\
+    \   case 'error':                           \n\
+    \        showStatus('error', obj['error']); \n\
+    \        break;                             \n\
+    \   case 'status':                          \n\
+    \       showStatus('ok', obj['status']);    \n\
+    \       break;                              \n\
+    \   case 'data-info':                       \n\
+    \       setDataInfo(obj['data-info']);      \n\
+    \       break;                              \n\
+    \   case 'rules':                           \n\
+    \       rulesUpdate(obj['rules']);          \n\
+    \       break;                              \n\
+    \  }                                        \n\
+    \ }"
 
-sortAndGroupConfigHtml = div ! A.class_ "sort-group col-md-4" $ do
-    h3 "Sort"
-    span "TODO" ! A.class_ "todo"
-    hr
-    h3 "Group"
-    span "TODO" ! A.class_ "todo"
+
+divFor2 id n1 e1 n2 e2 =
+    div ! A.class_ (stringValue $ id ++ " col-md-4") $ do
+        h3 n1
+        elemHtml e1
+        h3 n2
+        elemHtml e2
+
+--sortAndGroupConfigHtml = div ! A.class_ "sort-group col-md-4" $ do
+--    h3 "Sort"
+--
+--    hr
+--    h3 "Group"
+--    span "TODO" ! A.class_ "todo"
 
 sendMessageObjJS :: [(String, String)] -> String
 sendMessageObjJS entries = "wSocket.send(JSON.stringify({" ++ obj ++ "}))"
@@ -166,26 +211,38 @@ loadButtonClicked = "TODO: apply changes"
 
 statusList = StatusList{
     statusShow = undefined
-  , statusHtml = undefined
+  , statusHtml = div "" ! A.id "statuses"  -- span "TODO: Status" ! A.class_ "todo"
 }
 
 rawDataTextAreaDialog = RawDataTextAreaDialog{
     rawDataSendDescr = undefined
-  , rawDataHtml      = undefined
+
+  , rawDataHtml = do -- div ! A.class_ "data col-md-4" $ do
+        mkBootstrapButton "Load Data" "btn"
+            ! customAttribute "data-toggle" "modal"
+            ! customAttribute "data-target" "#upload-data-dialog"
+        hr
+        span "" ! A.class_ "info"
 }
 
 
-aprioriConfigUI = AprioriConfigUI undefined
+aprioriConfigUI = AprioriConfigUI $
+    span "TODO" ! A.class_ "todo"
 
-postProcessFilterBuilderUI = PostProcessFilterBuilderUI undefined
+postProcessFilterBuilderUI = PostProcessFilterBuilderUI $
+    div ! A.class_ "filter col-md-4" $
+        do h3 "Filters"
+           span "TODO" ! A.class_ "todo"
 
-postProcessSortBuilderUI = PostProcessSortBuilderUI undefined
+postProcessSortBuilderUI = PostProcessSortBuilderUI $
+    span "TODO" ! A.class_ "todo"
 
-postProcessGroupBuilderUI = PostProcessGroupBuilderUI undefined
+postProcessGroupBuilderUI = PostProcessGroupBuilderUI $
+    span "TODO" ! A.class_ "todo"
 
 showProcessedDataUI = ShowProcessedDataUI{
     sendDataToUI = undefined,
-    showDataHtml = undefined
+    showDataHtml = span "TODO" ! A.class_ "todo"
 }
 
 
