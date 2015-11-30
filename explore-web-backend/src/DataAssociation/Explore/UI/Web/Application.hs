@@ -18,6 +18,22 @@
 
 module DataAssociation.Explore.UI.Web.Application (
 
+  WebApp(..)
+
+, StatusMsg(..)
+, StatusList(..)
+, RawDataTextAreaDialog(..)
+, PostProcessFilterBuilderUI(..)
+, PostProcessSortBuilderUI(..)
+, PostProcessGroupBuilderUI(..)
+, ShowProcessedDataUI(..)
+
+, AprioriConfigUI(..)
+
+, ReqPath
+
+
+
 ) where
 
 import DataAssociation
@@ -25,6 +41,7 @@ import DataAssociation.PostProcess.Descriptor
 import DataAssociation.Explore.UI.Application
 
 import Data.IORef
+import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as Set
 
@@ -43,8 +60,10 @@ data WebApp = WebApp RawDataTextAreaDialog
                      PostProcessSortBuilderUI
                      PostProcessGroupBuilderUI
                     (ShowProcessedDataUI Set String)
+                     StatusList
 
-instance UIApplicationTypes WebApp where
+instance ApplicationUITypes WebApp where
+    type StatusAppUI     = StatusList
     type RawDataAppUI    = RawDataTextAreaDialog
     type ConfigAppUI     = AprioriConfigUI
     type PostFilterAppUI = PostProcessFilterBuilderUI
@@ -53,18 +72,36 @@ instance UIApplicationTypes WebApp where
     type ShowAppUI       = ShowProcessedDataUI Set String
 
 
-instance UIApplication WebApp where
-    uiRawData    (WebApp u _ _ _ _ _) = u
-    uiConfig     (WebApp _ u _ _ _ _) = u
-    uiPostFilter (WebApp _ _ u _ _ _) = u
-    uiPostSort   (WebApp _ _ _ u _ _) = u
-    uiPostGroup  (WebApp _ _ _ _ u _) = u
-    uiShow       (WebApp _ _ _ _ _ u) = u
+instance ApplicationUI WebApp where
+    uiRawData    (WebApp u _ _ _ _ _ _) = u
+    uiConfig     (WebApp _ u _ _ _ _ _) = u
+    uiPostFilter (WebApp _ _ u _ _ _ _) = u
+    uiPostSort   (WebApp _ _ _ u _ _ _) = u
+    uiPostGroup  (WebApp _ _ _ _ u _ _) = u
+    uiShow       (WebApp _ _ _ _ _ u _) = u
+    uiStatus     (WebApp _ _ _ _ _ _ u) = u
 
 
 -----------------------------------------------------------------------------
 
 type ReqPath = [String]
+
+-----------------------------------------------------------------------------
+
+data StatusMsg = StatusMsg{
+    msgString     :: String
+  , msgShowMillis :: Maybe Int
+  , msgPriority   :: Int
+}
+
+data StatusList = StatusList{
+    statusShow :: StatusMsg -> IO ()
+  , statusHtml :: Html
+}
+
+instance StatusUI StatusList where
+    type StatusMessage = StatusMsg
+    showStatus = statusShow
 
 -----------------------------------------------------------------------------
 
@@ -119,14 +156,15 @@ instance PostProcessUI PostProcessSortBuilderUI RuleOrder where
 -----------------------------------------------------------------------------
 
 data PostProcessGroupBuilderUI = PostProcessGroupBuilderUI {
-    ppGroupRef     :: IORef RuleGroup
+    ppGroupRef     :: IORef (Maybe RuleGroup)
   , ppGroupHtml    :: Html
   , ppGroupReqPath :: ReqPath
 }
 
 instance PostProcessUI PostProcessGroupBuilderUI RuleGroup where
-    getPostProcess = fmap (:[]) . readIORef . ppGroupRef
-    setPostProcess u [upd] = writeIORef (ppGroupRef u) upd
+    getPostProcess = fmap maybeToList . readIORef . ppGroupRef
+    setPostProcess u [upd] = writeIORef (ppGroupRef u) (Just upd)
+    setPostProcess u []    = writeIORef (ppGroupRef u) Nothing
 
 -----------------------------------------------------------------------------
 

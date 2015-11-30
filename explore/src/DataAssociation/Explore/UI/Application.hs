@@ -16,9 +16,10 @@
 
 module DataAssociation.Explore.UI.Application(
 
-  UIApplication(..)
-, UIApplicationTypes(..)
+  ApplicationUI(..)
+, ApplicationUITypes(..)
 
+, StatusUI(..)
 , RawDataUI(..)
 , PostProcessUI(..)
 , ShowUI(..)
@@ -26,10 +27,12 @@ module DataAssociation.Explore.UI.Application(
 ) where
 
 import DataAssociation
+import DataAssociation.Explore.Program
 import DataAssociation.PostProcess.Descriptor
 
 
-class UIApplicationTypes a where
+class ApplicationUITypes a where
+    type StatusAppUI
     type RawDataAppUI
     type ConfigAppUI
     type PostFilterAppUI
@@ -38,8 +41,9 @@ class UIApplicationTypes a where
     type ShowAppUI
 
 
-class UIApplication a where
+class ApplicationUI a where
 
+    uiStatus     :: a -> StatusAppUI
     uiRawData    :: a -> RawDataAppUI
     uiConfig     :: a -> ConfigAppUI
     uiPostFilter :: a -> PostFilterAppUI
@@ -49,6 +53,12 @@ class UIApplication a where
 
 
 --data RawDataAppUI = forall u . RawDataUI u => RawDataAppUI u
+
+
+class StatusUI u where
+    type StatusMessage
+
+    showStatus :: u -> StatusMessage -> IO ()
 
 class RawDataUI u where
     type RawData
