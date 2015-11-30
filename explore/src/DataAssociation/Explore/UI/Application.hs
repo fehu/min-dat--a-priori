@@ -20,6 +20,8 @@ module DataAssociation.Explore.UI.Application(
 
 , StatusUI(..)
 , RawDataUI(..)
+, RawDataInnerRepr(..)
+, PostProcessInnerRepr(..)
 , ShowUI(..)
 
 ) where
@@ -63,6 +65,18 @@ class StatusUI u where
 
 class RawDataUI u where
     sendDataDescription :: u -> [(String, String)] -> IO ()
+
+class RawDataInnerRepr r where
+    type RawData
+
+    getRawData :: r -> IO RawData
+    setRawData :: r -> RawData -> IO()
+
+-----------------------------------------------------------------------------
+
+class PostProcessInnerRepr u d where
+    getPostProcess :: u -> IO [d]
+    setPostProcess :: u -> [d] -> IO()
 
 -----------------------------------------------------------------------------
 
