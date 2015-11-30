@@ -30,6 +30,7 @@ library
   exposed-modules:     DataAssociation.Explore.UI.Web.Application
                        DataAssociation.Explore.UI.Web.Application.DefaultImpl
                        DataAssociation.Explore.UI.Web.Server
+                       DataAssociation.Explore.UI.Web.WebsocketServer
   -- other-modules:
   -- other-extensions:
   default-language:    Haskell2010
