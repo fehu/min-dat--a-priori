@@ -35,9 +35,12 @@ module DataAssociation.Explore.UI.Web.Application (
 , AprioriWebAppCache(..)
 , AprioriWebAppState(..)
 
-, StatusMsg(..)
+, WebAppMsg(..)
 , statusUpdMsg
 , statusErrMsg
+
+, messageToJson
+, dataUpdateMsg
 
 , StatusList(..)
 , RawDataTextAreaDialog(..)
@@ -152,31 +155,50 @@ class (Itemset set it, Ord (set it), Ord it) =>
 
 -----------------------------------------------------------------------------
 
-newtype StatusReporter = StatusReporter (StatusMsg -> IO ())
+newtype StatusReporter = StatusReporter (WebAppMsg -> IO ())
 
 
-data StatusMsg = StatusMsg{
-    msgString     :: String
+data WebAppMsg = WebAppMsg{
+    msgValue      :: JSValue
   , msgType       :: String
   , msgShowMillis :: Maybe Int
   , msgPriority   :: Int
+  , msgRaw        :: Bool
 }
 
-statusUpdMsg :: String -> StatusMsg
-statusUpdMsg msg = StatusMsg msg "status" (Just 5000) 1
+statusUpdMsg :: String -> WebAppMsg
+statusUpdMsg msg = WebAppMsg (showJSON msg) "status" (Just 5000) 1 False
 
-statusErrMsg :: String -> StatusMsg
-statusErrMsg msg = StatusMsg msg "error" Nothing 99
+statusErrMsg :: String -> WebAppMsg
+statusErrMsg msg = WebAppMsg (showJSON msg) "error" Nothing 99 False
+
+dataUpdateMsg :: RawWekaData -> WebAppMsg
+dataUpdateMsg wData = WebAppMsg (JSObject inf) "data-info" Nothing 0 True
+    where inf = toJSObject [
+              ("name",  showJSON $ rwdName wData)
+            , ("attrs", showJSON . length $ rwdAttrs wData)
+            , ("count", showJSON . length $ rawWekaData wData)
+            ]
+
+
+messageToJson (WebAppMsg msg tpe millis priority raw) = toJSObject [
+      ("type",  showJSON tpe)
+    , ("message", msg)
+    , ("showMillis", showJSON millis)
+    , ("priority", showJSON priority)
+    ]
+
+-----------------------------------------------------------------------------
 
 data StatusList = StatusList{
-    statusShow :: WS.Connection -> StatusMsg -> IO ()
+    statusShow :: WS.Connection -> WebAppMsg -> IO ()
   , statusHtml :: Html
 }
 
 instance HtmlElem StatusList where elemHtml = statusHtml
 
 instance StatusUI StatusList where
-    type StatusMessage = StatusMsg
+    type StatusMessage = WebAppMsg
     type MessagingContext = WS.Connection
 
     showStatus = statusShow
@@ -202,20 +224,22 @@ instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
 
     reqParse u jobj (StatusReporter reportStatus) state = do
         let rawData   = wekaDataFromLines lines
+        reportStatus $ dataUpdateMsg rawData
+
         let sparse   = wekaData2Sparse rawData
         let itemsets = map wekaEntryToItemset sparse
         let cache = mkAprioriCache itemsets
 
         setRawData state rawData
-        let rawMsg = "Read " ++ show (length itemsets) ++ " itemsets."
-        putStrLn rawMsg
+        putStrLn $ "Read " ++ show (length itemsets) ++ " itemsets."
 
         setCacheState state cache
         let AprioriCache c = cache
         let cacheMsg = "Created cache with " ++ show (Map.size c) ++ " itemsets."
         putStrLn cacheMsg
 
-        reportStatus $ statusUpdMsg (rawMsg ++ " " ++ cacheMsg)
+        reportStatus $ statusUpdMsg cacheMsg
+
 
         where Just (JSString rawData) = lookup "raw-data" jobj
               lines = map T.unpack . T.splitOn "\n" . T.pack $ fromJSString rawData

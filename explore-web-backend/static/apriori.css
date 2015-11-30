@@ -17,42 +17,22 @@ h3 {
   text-align:center;
 }
 
-
-/*#config div.col-md-4 {
-  border: s;
-}*/
-
-/*
-
-
-#config {
-    width:1000px;
-    padding:10px;       
+div.config {
+  border: solid 1px lightgray;
+  height: 50%;
+  margin: 32px;
 }
 
-#config .data {
-    width:300px;
-    float:left;
-    padding:10px;       
+input:required:invalid {
+  border: solid 1px red;
 }
 
-#config .filter {
-    width:300px;
-    float:left;
-    padding:10px;       
+#apriori-form label {
+  float: left;
+  width: 9em;
+  margin-right: 1em;
 }
 
-#config .sort-group {
-    width:300px;
-    float:left;
-    padding:10px;       
-}
+#apriori-form input {
 
-#apply {
-  
 }
-
-#rules {
-  
-}
-*/

@@ -59,7 +59,7 @@ wsserver app iState pending = do
 
     forever $ handle (\e -> reportStatus . statusErrMsg $ show (e :: SomeException))
             $ do
-        msg   <- WS.receiveData conn
+        msg <- WS.receiveData conn
         putStrLn $ "processing message: " ++ T.unpack msg
 
         let Right (JSObject obj) = runGetJSON readJSObject (T.unpack msg)

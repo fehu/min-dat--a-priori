@@ -1,7 +1,7 @@
 
 wSocket.onclose = function(e) { showStatus('error', 'Connction to server closed!') };
 wSocket.onmessage = function(msg) {
-//     console.log('received message: '.concat(msg.data));
+    console.log('received message: '.concat(msg.data));
     obj = JSON.parse(msg.data);                    
 //     console.log('obj = '.concat(obj));
     sTime = obj['showMillis']['Just'];
@@ -52,3 +52,10 @@ var showStatus = function(type, msg, showTime){
     if (showTime != undefined)
       window.setTimeout(function() { status.alert('close'); }, showTime);
   }
+
+var setDataInfo = function(inf) {
+    $('#data-name').text(inf['name']);
+    $('#data-attrs').text(inf['attrs']);
+    $('#data-count').text(inf['count']);
+}
+

@@ -70,11 +70,11 @@ instance RenderableWebPage WebApp where
                     section ! A.id "config"
                             ! A.class_ "span9" $
                         div ! A.class_ "row" $ do
-                            divFor2 "raw-data-and-conf"
+                            divFor2 "config raw-data-and-conf col-md-3"
                                     "Data"    (uiRawData app)
                                     "Apriori" (uiConfig app)
                             elemHtml $ uiPostFilter app
-                            divFor2 "sort-group"
+                            divFor2 "config sort-group col-md-3"
                                     "Sort"  (uiPostSort app)
                                     "Group" (uiPostGroup app)
                     hr
@@ -110,8 +110,8 @@ pageScripts = do
     script "" ! A.src "/static/apriori.js"
 
 
-divFor2 id n1 e1 n2 e2 =
-    div ! A.class_ (stringValue $ id ++ " col-md-4") $ do
+divFor2 clazz n1 e1 n2 e2 =
+    div ! A.class_ (stringValue clazz) $ do
         h3 n1
         elemHtml e1
         h3 n2
@@ -161,13 +161,6 @@ mkBootstrapCloseModalButton txt clazz =
 loadButtonClicked = "TODO: apply changes"
 
 
-messageToJson (StatusMsg msg tpe millis priority) = toJSObject [
-      ("type",  showJSON tpe)
-    , ("message", showJSON msg)
-    , ("showMillis", showJSON millis)
-    , ("priority", showJSON priority)
-    ]
-
 
 statusList = StatusList{
     statusShow = \conn -> WS.sendTextData conn . T.pack . encode . messageToJson
@@ -182,15 +175,41 @@ rawDataTextAreaDialog = RawDataTextAreaDialog{
             ! customAttribute "data-toggle" "modal"
             ! customAttribute "data-target" "#upload-data-dialog"
         hr
-        span "" ! A.class_ "info"
+        dl ! A.class_ "info" $ do
+            dt "Name:"
+            dd "" ! A.id "data-name"
+            dt "Attributes:"
+            dd "" ! A.id "data-attrs"
+            dt "Entries:"
+            dd "" ! A.id "data-count"
 }
 
 
+mkNumberInputJS labelTxt id = do
+    label labelTxt ! A.for id
+    input ! A.type_ "number"
+          ! A.id id
+          ! A.name id
+          ! A.value "0.0"
+          ! A.step "any" -- 0.01
+          ! A.min "0.0"
+          ! A.max "1.0"
+          ! A.required "true"
+
 aprioriConfigUI = AprioriConfigUI $
-    span "TODO" ! A.class_ "todo"
+    form ! A.id "apriori-form" $ do
+        mkNumberInputJS "Min. Support" "min-support"
+        mkNumberInputJS "Min. Confidence" "min-confidence"
+--        script "initAprioriControls()"
+
+--    label "Min. Support" ! A.for "min-support"
+--    input ! A.type_ "text"
+--          ! A.id "min-support"
+--          ! customAttribute "data-trigger" "focus"
+--    span "TODO" ! A.class_ "todo"
 
 postProcessFilterBuilderUI = PostProcessFilterBuilderUI $
-    div ! A.class_ "filter col-md-4" $
+    div ! A.class_ "config filter col-md-4" $
         do h3 "Filters"
            span "TODO" ! A.class_ "todo"
 
