@@ -38,9 +38,13 @@ import DataAssociation.Explore.UI.Web.Render
 import Data.IORef
 import qualified Data.Set as Set
 import Data.List (intercalate)
+import qualified Data.Text as T
+import Text.JSON
 
 import Text.Blaze.Html5
 import qualified Text.Blaze.Html5.Attributes as A
+
+import qualified Network.WebSockets as WS
 
 
 
@@ -157,9 +161,16 @@ mkBootstrapCloseModalButton txt clazz =
 loadButtonClicked = "TODO: apply changes"
 
 
+messageToJson (StatusMsg msg tpe millis priority) = toJSObject [
+      ("type",  showJSON tpe)
+    , ("message", showJSON msg)
+    , ("showMillis", showJSON millis)
+    , ("priority", showJSON priority)
+    ]
+
 
 statusList = StatusList{
-    statusShow = undefined
+    statusShow = \conn -> WS.sendTextData conn . T.pack . encode . messageToJson
   , statusHtml = div "" ! A.id "statuses"  -- span "TODO: Status" ! A.class_ "todo"
 }
 

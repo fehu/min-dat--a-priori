@@ -22,6 +22,7 @@ module DataAssociation.Explore.UI.Web.WebsocketServer (
 
 import DataAssociation
 import DataAssociation.Explore.UI.Web.Application
+import DataAssociation.Explore.UI.Application
 import DataAssociation.Explore.UI.State
 import WekaData
 
@@ -38,7 +39,8 @@ import Text.JSON
 import Text.JSON.String
 
 
-wsserver :: (ReactiveWebElemSelector app (AprioriWebAppState set it)) =>
+wsserver :: ( ReactiveWebElemSelector app (AprioriWebAppState set it)
+            , ApplicationUI app ) =>
           app
        -> InitialState (AprioriWebAppCache set it)
                        RawWekaData
@@ -51,6 +53,8 @@ wsserver app iState pending = do
     state <- newStateWithInitial iState
     putStrLn "created new state"
 
+    let statusReporter = StatusReporter (showStatus (uiStatus app) conn)
+
     forever $ do
         msg   <- WS.receiveData conn
         putStrLn $ "processing message: " ++ T.unpack msg
@@ -60,7 +64,7 @@ wsserver app iState pending = do
         let Just (JSString eId) = lookup (elemNameParam app state) jObj
 
         case reactiveWebElemByName app state $ fromJSString eId
-            of SomeReactiveWebElem e -> reqParse e jObj state
+            of SomeReactiveWebElem e -> reqParse e jObj statusReporter state
 
         putStrLn "done"
 

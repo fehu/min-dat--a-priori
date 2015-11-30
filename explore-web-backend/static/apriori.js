@@ -1,19 +1,24 @@
 
 wSocket.onclose = function(e) { showStatus('error', 'Connction to server closed!') };
 wSocket.onmessage = function(msg) {
-    obj = JSON.parse(msg);                    
+    console.log('received message: '.concat(msg.data));
+    obj = JSON.parse(msg.data);                    
+    console.log('obj = '.concat(obj));
+    sTime = obj['showMillis']['Just'];
+    if (sTime != undefined) showTime = parseInt(sTime)
+    
     switch(obj['type']) {                     
       case 'error':                           
-           showStatus('error', obj['error']); 
+           showStatus('error', obj['message'], showTime); 
            break;                             
       case 'status':                          
-          showStatus('ok', obj['status']);    
+          showStatus('ok', obj['message'], showTime);    
           break;                              
       case 'data-info':                       
-          setDataInfo(obj['data-info']);      
+          setDataInfo(obj['message']);      
           break;                              
       case 'rules':                           
-          rulesUpdate(obj['rules']);          
+          rulesUpdate(obj['message']);          
           break;                              
      }                                        
     }
@@ -22,7 +27,7 @@ wSocket.onmessage = function(msg) {
 
 _closeBtn = '<a class=\"close\" data-dismiss=\"alert\" href=\"#\">&times;</a>'; 
 
-var showStatus = function(type, msg){     
+var showStatus = function(type, msg, showTime){     
     var clazz = '';                       
     var extra = '';                       
     switch (type) {                       
@@ -39,5 +44,9 @@ var showStatus = function(type, msg){
             .concat(extra)
             .concat(msg)
           .concat('</div>');
-    $(str).prependTo('#statuses');        
+          
+    var status = $(str).prependTo('#statuses');
+
+    if (showTime != undefined)
+      window.setTimeout(function() { status.alert('close'); }, showTime);
   }

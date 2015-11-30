@@ -28,6 +28,7 @@ module DataAssociation.Explore.UI.Web.Application (
 , ReactiveWebElemSelector(..)
 
 , WekaEntryToItemset(..)
+, StatusReporter(..)
 
 , HtmlElem(..)
 
@@ -57,10 +58,13 @@ import WekaData
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as Set
+import qualified Data.Map as Map
 import qualified Data.Text as T
 
 import Text.Read ( readMaybe )
 import Text.Blaze.Html5 (Html)
+
+import qualified Network.WebSockets as WS
 
 import Text.JSON
 
@@ -127,7 +131,7 @@ class ReactiveWebElemConf u where
 class (ReactiveWebElemConf u) =>
     ReactiveWebElem u state where
         type ReactiveWebElemArg
-        reqParse :: u -> ReactiveWebElemArg -> state -> IO ()
+        reqParse :: u -> ReactiveWebElemArg -> StatusReporter -> state -> IO ()
 
 data SomeReactiveWebElem state = forall u . ReactiveWebElem u state =>
      SomeReactiveWebElem u
@@ -145,6 +149,9 @@ class (Itemset set it, Ord (set it), Ord it) =>
 
 -----------------------------------------------------------------------------
 
+newtype StatusReporter = StatusReporter (StatusMsg -> IO ())
+
+
 data StatusMsg = StatusMsg{
     msgString     :: String
   , msgType       :: String
@@ -152,8 +159,11 @@ data StatusMsg = StatusMsg{
   , msgPriority   :: Int
 }
 
+statusUpdMsg :: String -> StatusMsg
+statusUpdMsg msg = StatusMsg msg "status" (Just 5000) 1
+
 data StatusList = StatusList{
-    statusShow :: StatusMsg -> IO ()
+    statusShow :: WS.Connection -> StatusMsg -> IO ()
   , statusHtml :: Html
 }
 
@@ -161,6 +171,8 @@ instance HtmlElem StatusList where elemHtml = statusHtml
 
 instance StatusUI StatusList where
     type StatusMessage = StatusMsg
+    type MessagingContext = WS.Connection
+
     showStatus = statusShow
 
 -----------------------------------------------------------------------------
@@ -182,13 +194,22 @@ instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
 
     type ReactiveWebElemArg = [(String, JSValue)]
 
-    reqParse u jobj state = do
+    reqParse u jobj (StatusReporter reportStatus) state = do
         let rawData   = wekaDataFromLines lines
         let sparse   = wekaData2Sparse rawData
         let itemsets = map wekaEntryToItemset sparse
+        let cache = mkAprioriCache itemsets
 
         setRawData state rawData
-        setCacheState state $ mkAprioriCache itemsets
+        let rawMsg = "Read " ++ show (length itemsets) ++ " itemsets."
+        putStrLn rawMsg
+
+        setCacheState state cache
+        let AprioriCache c = cache
+        let cacheMsg = "Created cache with " ++ show (Map.size c) ++ " itemsets."
+        putStrLn cacheMsg
+
+        reportStatus $ statusUpdMsg (rawMsg ++ " " ++ cacheMsg)
 
         where Just (JSString rawData) = lookup "raw-data" jobj
               lines = map T.unpack . T.splitOn "\n" . T.pack $ fromJSString rawData

@@ -58,8 +58,9 @@ class ApplicationUI a where
 
 class StatusUI u where
     type StatusMessage
+    type MessagingContext
 
-    showStatus :: u -> StatusMessage -> IO ()
+    showStatus :: u -> MessagingContext -> StatusMessage -> IO ()
 
 -----------------------------------------------------------------------------
 
