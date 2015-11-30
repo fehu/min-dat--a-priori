@@ -1,5 +1,5 @@
 name: DataAssociation
-version: 0.2.0.2
+version: 0.2.0.3
 cabal-version: 1.12
 build-type: Simple
 license: MIT
@@ -19,6 +19,7 @@ library
                      DataAssociation.Abstract
                      DataAssociation.APriori
                      DataAssociation.APriori.Debug
+                     DataAssociation.APriori.Public
                      DataAssociation.SimpleRulesGenerator
                      DataAssociation.SimpleRulesGenerator.Debug
                      DataAssociation.Utils
