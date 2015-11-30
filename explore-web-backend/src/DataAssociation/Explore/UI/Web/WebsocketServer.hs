@@ -38,9 +38,11 @@ import Text.JSON
 import Text.JSON.String
 
 
-wsserver :: (ReactiveWebElemSelector app (AprioriWebAppState cache)) =>
+wsserver :: (ReactiveWebElemSelector app (AprioriWebAppState set it)) =>
           app
-       -> InitialState cache RawWekaData (MinSupport, MinConfidence)
+       -> InitialState (AprioriWebAppCache set it)
+                       RawWekaData
+                       (MinSupport, MinConfidence)
        -> WS.ServerApp
 wsserver app iState pending = do
     conn <- WS.acceptRequest pending

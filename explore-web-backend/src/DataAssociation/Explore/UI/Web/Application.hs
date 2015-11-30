@@ -27,8 +27,11 @@ module DataAssociation.Explore.UI.Web.Application (
 , SomeReactiveWebElem(..)
 , ReactiveWebElemSelector(..)
 
+, WekaEntryToItemset(..)
+
 , HtmlElem(..)
 
+, AprioriWebAppCache(..)
 , AprioriWebAppState(..)
 
 , StatusMsg(..)
@@ -44,6 +47,8 @@ module DataAssociation.Explore.UI.Web.Application (
 ) where
 
 import DataAssociation
+import DataAssociation.Definitions
+import DataAssociation.APriori.Public
 import DataAssociation.PostProcess.Descriptor
 import DataAssociation.Explore.UI.Application
 import DataAssociation.Explore.UI.State
@@ -93,14 +98,16 @@ instance ApplicationUI WebApp where
     uiShow       (WebApp _ _ _ _ _ u _) = u
     uiStatus     (WebApp _ _ _ _ _ _ u) = u
 
-instance (Show WekaDataAttribute) =>
-    ReactiveWebElemSelector WebApp (AprioriWebAppState cache) where
+instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
+    ReactiveWebElemSelector WebApp (AprioriWebAppState set it) where
 
     elemNameParam _ _ = "elem-id"
     reactiveWebElemByName a _ name =
         case name of "raw-data" -> SomeReactiveWebElem . uiRawData $ a
 
-type AprioriWebAppState cache = ApplicationState cache (MinSupport, MinConfidence)
+type AprioriWebAppCache set it = AprioriCache set it
+type AprioriWebAppState set it = ApplicationState (AprioriWebAppCache set it)
+                                                  (MinSupport, MinConfidence)
 
 --uiReactiveWebElems :: WebApp -> [SomeReactiveWebElem (AprioriWebAppState cache)]
 --uiReactiveWebElems a = [ SomeReactiveWebElem $ uiRawData a
@@ -128,6 +135,13 @@ data SomeReactiveWebElem state = forall u . ReactiveWebElem u state =>
 class ReactiveWebElemSelector s state where
     elemNameParam         :: s -> state -> String
     reactiveWebElemByName :: s -> state -> String -> SomeReactiveWebElem state
+
+
+-----------------------------------------------------------------------------
+
+class (Itemset set it, Ord (set it), Ord it) =>
+    WekaEntryToItemset set it where
+        wekaEntryToItemset :: WekaEntry -> set it
 
 -----------------------------------------------------------------------------
 
@@ -163,12 +177,19 @@ instance RawDataUI RawDataTextAreaDialog where
 instance HtmlElem            RawDataTextAreaDialog where elemHtml = rawDataHtml
 instance ReactiveWebElemConf RawDataTextAreaDialog where reqParam _ = "raw-data"
 
-instance (Show WekaDataAttribute) =>
-    ReactiveWebElem RawDataTextAreaDialog (AprioriWebAppState cache) where
+instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
+    ReactiveWebElem RawDataTextAreaDialog (AprioriWebAppState set it) where
 
     type ReactiveWebElemArg = [(String, JSValue)]
 
-    reqParse u jobj state = setRawData state $ wekaDataFromLines lines
+    reqParse u jobj state = do
+        let rawData   = wekaDataFromLines lines
+        let sparse   = wekaData2Sparse rawData
+        let itemsets = map wekaEntryToItemset sparse
+
+        setRawData state rawData
+        setCacheState state $ mkAprioriCache itemsets
+
         where Just (JSString rawData) = lookup "raw-data" jobj
               lines = map T.unpack . T.splitOn "\n" . T.pack $ fromJSString rawData
 
@@ -180,7 +201,7 @@ newtype AprioriConfigUI = AprioriConfigUI Html
 instance HtmlElem            AprioriConfigUI where elemHtml (AprioriConfigUI h) = h
 instance ReactiveWebElemConf AprioriConfigUI where reqParam _ = "apriori-params"
 
---instance ReactiveWebElem AprioriConfigUI (AprioriWebAppState cache) where
+--instance ReactiveWebElem AprioriConfigUI (AprioriWebAppState set it) where
 --    reqParse u mbTxt s = maybe s (\p -> s { programConfigState = p }) mbParams
 --     where mbParams = do txt <- mbTxt
 --                         let readMbF x = readMaybe $ T.unpack x :: Maybe Float
