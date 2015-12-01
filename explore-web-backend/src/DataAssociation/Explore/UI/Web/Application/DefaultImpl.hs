@@ -160,8 +160,7 @@ mkServerMessage elemName param pData = [
 
 waitModal id = someModal id . div
              $ div ! A.class_ "modal-dialog"
---             $ div ! A.class_ "modal-content"
-             $ i "" ! A.class_ "glyphicon glyphicon-repeat glyphicon-spin glyphicon-large" -- glyphicon glyphicon-refresh glyphicon-spin
+             $ i "" ! A.class_ "glyphicon glyphicon-repeat glyphicon-spin"
 
 mkBootstrapButton txt clazz = button txt ! A.type_ "button"
                                          ! A.class_ clazz
