@@ -14,12 +14,6 @@ import Control.Monad
 main :: IO ()
 main = getArgs >>= parse
 
-data ParsedArg = ParsedArg { filename :: String
-                           , minsup   :: Float
-                           , minconf  :: Float
-                           }
-
-
 maybeRead = fmap fst . listToMaybe . reads
 
 maybeReadInUnit :: String -> Maybe Float
