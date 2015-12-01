@@ -6,7 +6,7 @@
 }
 
 
-header { 
+header {
   background-color:black;
   color:white;
   text-align:center;
@@ -19,7 +19,7 @@ h3 {
 
 div.config {
   border: solid 1px lightgray;
-  height: 50%;
+  height: 430px;
   margin: 32px;
 }
 
@@ -35,4 +35,42 @@ input:required:invalid {
 
 #apriori-form input {
 
+}
+
+#wait-modal .glyphicon {
+  font-size: 50px;
+  top: 50%;
+}
+
+#wait-modal .modal-dialog{
+  text-align: center;
+  height: 100%;
+}
+
+
+
+/* From http://chadkuehn.com/animated-font-spinners/ */
+.fa-spin-custom, .glyphicon-spin {
+  -webkit-animation: spin 1000ms infinite linear;
+  animation: spin 1000ms infinite linear;
+}
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+@keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
 }

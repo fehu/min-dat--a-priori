@@ -86,6 +86,7 @@ instance RenderableWebPage WebApp where
                         h2 "Rules"
                         elemHtml $ uiShow app
             loadDataDialog
+            waitModal "wait-modal"
 
 
 pageHead = head $ do
@@ -119,17 +120,20 @@ divFor2 clazz n1 e1 n2 e2 =
 
 
 sendMessageObjJS :: [(String, String)] -> String
-sendMessageObjJS entries = "wSocket.send(JSON.stringify({" ++ obj ++ "}))"
+sendMessageObjJS entries = "wSocket.send(JSON.stringify({" ++ obj ++ "})); waitModal(true);"
     where obj = intercalate ","
               $ Prelude.map (\(k,v) -> show k ++ ":" ++ v) entries
 
 
-loadDataDialog = div     ! A.id "upload-data-dialog"
-                         ! A.class_ "modal fade"
-                         ! A.tabindex "-1"
-                         ! customAttribute "role" "dialog"
-                         ! customAttribute "aria-labelledby" "upload-data-dialog-label"
-                         ! customAttribute "aria-hidden" "true"
+
+someModal id =  div ! A.id id
+                 ! A.class_ "modal fade"
+                 ! customAttribute "role" "dialog"
+                 ! customAttribute "aria-hidden" "true"
+
+loadDataDialog = someModal "upload-data-dialog"
+                            ! A.tabindex "-1"
+                            ! customAttribute "aria-labelledby" "upload-data-dialog-label"
                    $ div ! A.class_ "modal-dialog"
                    $ div ! A.class_ "modal-content"
                    $ do div ! A.class_ "modal-header"
@@ -141,13 +145,23 @@ loadDataDialog = div     ! A.id "upload-data-dialog"
                             textarea "" ! A.id "upload-data-dialog-text"
                         div ! A.class_ "modal-footer" $ do
                             mkBootstrapCloseModalButton "Upload" "btn btn-primary"
-                                ! A.onclick (stringValue $ sendMessageObjJS
-                                             [ ("elem-id", "\"raw-data\"")
-                                             , ("raw-data", "$('#upload-data-dialog-text').val()")
-                                             ]
+                                ! A.onclick (stringValue . sendMessageObjJS $
+                                             mkServerMessage "elem-id"
+                                                             "raw-data"
+                                                             "$('#upload-data-dialog-text').val()"
                                             )
                             mkBootstrapCloseModalButton "Cancel" "btn btn-inverse"
 
+
+mkServerMessage elemName param pData = [
+      (elemName, "\"" ++ param ++ "\"")
+    , (param   , pData)
+    ]
+
+waitModal id = someModal id . div
+             $ div ! A.class_ "modal-dialog"
+--             $ div ! A.class_ "modal-content"
+             $ i "" ! A.class_ "glyphicon glyphicon-repeat glyphicon-spin glyphicon-large" -- glyphicon glyphicon-refresh glyphicon-spin
 
 mkBootstrapButton txt clazz = button txt ! A.type_ "button"
                                          ! A.class_ clazz
@@ -175,13 +189,14 @@ rawDataTextAreaDialog = RawDataTextAreaDialog{
             ! customAttribute "data-toggle" "modal"
             ! customAttribute "data-target" "#upload-data-dialog"
         hr
+        let space = preEscapedToHtml ("&nbsp;" :: String)
         dl ! A.class_ "info" $ do
             dt "Name:"
-            dd "" ! A.id "data-name"
+            dd space ! A.id "data-name"
             dt "Attributes:"
-            dd "" ! A.id "data-attrs"
+            dd space ! A.id "data-attrs"
             dt "Entries:"
-            dd "" ! A.id "data-count"
+            dd space ! A.id "data-count"
 }
 
 
@@ -200,7 +215,6 @@ aprioriConfigUI = AprioriConfigUI $
     form ! A.id "apriori-form" $ do
         mkNumberInputJS "Min. Support" "min-support"
         mkNumberInputJS "Min. Confidence" "min-confidence"
---        script "initAprioriControls()"
 
 --    label "Min. Support" ! A.for "min-support"
 --    input ! A.type_ "text"
