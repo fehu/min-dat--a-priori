@@ -27,7 +27,7 @@ import DataAssociation.Abstract
 
 -----------------------------------------------------------------------------
 
-newtype AprioriCache set it = AprioriCache (Map (set it) Float)
+newtype AprioriCache set it = AprioriCache (Map (set it) Float) deriving (Show, Read)
 
 -- | select Large itemsets from given cache
 aprioriCached :: (Ord (set it), Ord it, Itemset set it) =>
