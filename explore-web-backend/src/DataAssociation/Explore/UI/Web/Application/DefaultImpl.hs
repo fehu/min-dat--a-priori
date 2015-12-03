@@ -122,7 +122,7 @@ divFor2 clazz n1 e1 n2 e2 =
 sendMessageObjJS :: [(String, String)] -> String
 sendMessageObjJS entries = "wSocket.send(JSON.stringify({" ++ obj ++ "})); waitModal(true);"
     where obj = intercalate ","
-              $ Prelude.map (\(k,v) -> show k ++ ":" ++ v) entries
+              $ Prelude.map (\(k,v) -> "'" ++ k ++ "':" ++ v) entries
 
 
 
@@ -146,16 +146,17 @@ loadDataDialog = someModal "upload-data-dialog"
                         div ! A.class_ "modal-footer" $ do
                             mkBootstrapCloseModalButton "Upload" "btn btn-primary"
                                 ! A.onclick (stringValue . sendMessageObjJS $
-                                             mkServerMessage "elem-id"
+                                             mkServerMessage "raw-data"
                                                              "raw-data"
                                                              "$('#upload-data-dialog-text').val()"
                                             )
                             mkBootstrapCloseModalButton "Cancel" "btn btn-inverse"
 
+elemNameParam' = elemNameParam (undefined :: WebApp)
 
 mkServerMessage elemName param pData = [
-      (elemName, "\"" ++ param ++ "\"")
-    , (param   , pData)
+      (elemNameParam', show elemName)
+    , (param         , pData)
     ]
 
 waitModal id = someModal id . div
@@ -199,7 +200,7 @@ rawDataTextAreaDialog = RawDataTextAreaDialog{
 }
 
 
-mkNumberInputJS labelTxt id = do
+mkNumberInput labelTxt id = do
     label labelTxt ! A.for id
     input ! A.type_ "number"
           ! A.id id
@@ -210,10 +211,27 @@ mkNumberInputJS labelTxt id = do
           ! A.max "1.0"
           ! A.required "true"
 
-aprioriConfigUI = AprioriConfigUI $
-    form ! A.id "apriori-form" $ do
-        mkNumberInputJS "Min. Support" "min-support"
-        mkNumberInputJS "Min. Confidence" "min-confidence"
+inputChangeJS name param =
+    "f = function(e){\
+    \ if(e.currentTarget.validity.valid) {"
+    ++ sendMessageObjJS (mkServerMessage name param "e.currentTarget.value")
+    ++ "  }; };\
+    \$('#" ++ name ++ "').change(f)"
+
+aprioriConfigUI = AprioriConfigUI ( aprioriConfigMSupUI
+                                  , aprioriConfigMConfUI
+                                  , form ! A.id "apriori-form" $
+                                        do elemHtml aprioriConfigMSupUI
+                                           elemHtml aprioriConfigMConfUI
+                                  )
+
+aprioriConfigMSupUI = AprioriConfigMSupUI $ do
+    mkNumberInput "Min. Support" "min-support"
+    script . string $ inputChangeJS "min-support" "apriori-param"
+
+aprioriConfigMConfUI = AprioriConfigMConfUI $ do
+    mkNumberInput "Min. Confidence" "min-confidence"
+    script . string $ inputChangeJS "min-confidence" "apriori-param"
 
 --    label "Min. Support" ! A.for "min-support"
 --    input ! A.type_ "text"

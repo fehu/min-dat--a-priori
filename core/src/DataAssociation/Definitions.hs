@@ -45,9 +45,9 @@ class (Eq (set item), Show (set item), Show item) =>
 
 
 -- | A container for the /minimum support/ parameter.
-newtype MinSupport    = MinSupport Float
+newtype MinSupport    = MinSupport Float deriving (Show, Read)
 -- | A container for the /minimum confidence/ parameter.
-newtype MinConfidence = MinConfidence Float
+newtype MinConfidence = MinConfidence Float deriving (Show, Read)
 
 
 -- | Association Rule

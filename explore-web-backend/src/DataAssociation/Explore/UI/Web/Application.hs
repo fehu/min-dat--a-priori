@@ -26,6 +26,7 @@ module DataAssociation.Explore.UI.Web.Application (
 , ReactiveWebElemConf(..)
 , SomeReactiveWebElem(..)
 , ReactiveWebElemSelector(..)
+, ReactiveWebElemSelectorParam(..)
 
 , WekaEntryToItemset(..)
 , StatusReporter(..)
@@ -50,6 +51,12 @@ module DataAssociation.Explore.UI.Web.Application (
 , ShowProcessedDataUI(..)
 
 , AprioriConfigUI(..)
+, aprioriConfigMSup
+, aprioriConfigMConf
+, aprioriConfigHtml
+
+, AprioriConfigMSupUI(..)
+, AprioriConfigMConfUI(..)
 
 ) where
 
@@ -67,12 +74,16 @@ import qualified Data.Set as Set
 import qualified Data.Map as Map
 import qualified Data.Text as T
 
+import Control.Applicative ( (<$>) )
+import Control.Arrow
+
 import Text.Read ( readMaybe )
 import Text.Blaze.Html5 (Html)
 
 import qualified Network.WebSockets as WS
 
 import Text.JSON
+
 
 --import Text.Blaze.Html5 hiding (map, head)
 --import qualified Text.Blaze.Html5 as H
@@ -108,12 +119,13 @@ instance ApplicationUI WebApp where
     uiShow       (WebApp _ _ _ _ _ u _) = u
     uiStatus     (WebApp _ _ _ _ _ _ u) = u
 
+instance ReactiveWebElemSelectorParam WebApp where elemNameParam _ = "elem-id"
 instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
     ReactiveWebElemSelector WebApp (AprioriWebAppState set it) where
-
-    elemNameParam _ _ = "elem-id"
     reactiveWebElemByName a _ name =
-        case name of "raw-data" -> SomeReactiveWebElem . uiRawData $ a
+        case name of "raw-data"       -> SomeReactiveWebElem . uiRawData $ a
+                     "min-support"    -> SomeReactiveWebElem . aprioriConfigMSup  . uiConfig $ a
+                     "min-confidence" -> SomeReactiveWebElem . aprioriConfigMConf . uiConfig $ a
 
 type AprioriWebAppCache set it = AprioriCache set it
 type AprioriWebAppState set it = ApplicationState (AprioriWebAppCache set it)
@@ -142,9 +154,10 @@ class (ReactiveWebElemConf u) =>
 data SomeReactiveWebElem state = forall u . ReactiveWebElem u state =>
      SomeReactiveWebElem u
 
-class ReactiveWebElemSelector s state where
-    elemNameParam         :: s -> state -> String
-    reactiveWebElemByName :: s -> state -> String -> SomeReactiveWebElem state
+class ReactiveWebElemSelectorParam s where elemNameParam :: s -> String
+class (ReactiveWebElemSelectorParam s) =>
+    ReactiveWebElemSelector s state where
+        reactiveWebElemByName :: s -> state -> String -> SomeReactiveWebElem state
 
 
 -----------------------------------------------------------------------------
@@ -247,21 +260,48 @@ instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
 
 -----------------------------------------------------------------------------
 
-newtype AprioriConfigUI = AprioriConfigUI Html
+newtype AprioriConfigUI = AprioriConfigUI (AprioriConfigMSupUI, AprioriConfigMConfUI, Html)
 
-instance HtmlElem            AprioriConfigUI where elemHtml (AprioriConfigUI h) = h
-instance ReactiveWebElemConf AprioriConfigUI where reqParam _ = "apriori-params"
+aprioriConfigMSup  (AprioriConfigUI (x,_, _))  = x
+aprioriConfigMConf (AprioriConfigUI (_, x, _)) = x
+aprioriConfigHtml  (AprioriConfigUI (_, _, x)) = x
 
---instance ReactiveWebElem AprioriConfigUI (AprioriWebAppState set it) where
---    reqParse u mbTxt s = maybe s (\p -> s { programConfigState = p }) mbParams
---     where mbParams = do txt <- mbTxt
---                         let readMbF x = readMaybe $ T.unpack x :: Maybe Float
---                         case T.splitOn "," txt of [s, c] -> do sup  <- readMbF s
---                                                                conf <- readMbF c
---                                                                return ( MinSupport sup
---                                                                       , MinConfidence conf)
---                                                   _      -> Nothing
---
+instance HtmlElem AprioriConfigUI where elemHtml = aprioriConfigHtml
+
+
+setAprioriState sel u jobj (StatusReporter reportStatus) state = do
+    let Ok v' = readJSON . fromJust $ lookup (reqParam u) jobj
+    let    v  = read v'
+    cState <- getProgramConfigState state
+    let newState = sel (const v) cState
+    setProgramConfigState state newState
+    reportStatus . statusUpdMsg $ "Updated apriori parameters: "
+                                ++ show (fst newState) ++ ", "
+                                ++ show (snd newState)
+
+-----------------------------------------------------------------------------
+
+newtype AprioriConfigMSupUI = AprioriConfigMSupUI Html
+
+instance HtmlElem            AprioriConfigMSupUI where elemHtml (AprioriConfigMSupUI h) = h
+instance ReactiveWebElemConf AprioriConfigMSupUI where reqParam _ = "apriori-param"
+
+instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
+    ReactiveWebElem AprioriConfigMSupUI (AprioriWebAppState set it) where
+        type ReactiveWebElemArg = [(String, JSValue)]
+        reqParse = setAprioriState (first . (.) MinSupport)
+
+-----------------------------------------------------------------------------
+
+newtype AprioriConfigMConfUI = AprioriConfigMConfUI Html
+
+instance HtmlElem            AprioriConfigMConfUI where elemHtml (AprioriConfigMConfUI h) = h
+instance ReactiveWebElemConf AprioriConfigMConfUI where reqParam _ = "apriori-param"
+
+instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
+    ReactiveWebElem AprioriConfigMConfUI (AprioriWebAppState set it) where
+        type ReactiveWebElemArg = [(String, JSValue)]
+        reqParse = setAprioriState (second . (.) MinConfidence)
 
 -----------------------------------------------------------------------------
 

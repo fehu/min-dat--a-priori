@@ -64,7 +64,7 @@ wsserver app iState pending = do
 
         let Right (JSObject obj) = runGetJSON readJSObject (T.unpack msg)
         let jObj = fromJSObject obj
-        let Just (JSString eId) = lookup (elemNameParam app state) jObj
+        let Just (JSString eId) = lookup (elemNameParam app) jObj
 
         case reactiveWebElemByName app state $ fromJSString eId
             of SomeReactiveWebElem e -> reqParse e jObj statusReporter state

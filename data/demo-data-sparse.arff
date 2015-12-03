@@ -1,0 +1,45 @@
+@relation 'course-selection-demo'
+@attribute carrier { ITC, ARQ }
+@attribute semester { S1, S2 }
+% ITC Primer Semestre
+@attribute 'Fisica I' { t}
+@attribute 'Lengua extranjera' { t}
+@attribute 'Matematicas para ingenieria I' { t}
+@attribute 'Fundamentos de programacion' { t}
+@attribute 'Introduccion a interfaces y aplicaciones en Internet' { t}
+@attribute 'Introduccion a la profesion de tecnologias de informacion y electronica' { t}
+@attribute 'Taller de analisis y expresion verbal' { t}
+% ITC Segundo Semestre
+@attribute Economia { t}
+@attribute 'Matematicas para ingenieria II' { t}
+@attribute 'Matematicas discretas' { t}
+@attribute 'Organizacion computacional' { t}
+@attribute 'Programacion y estructura de datos' { t}
+@attribute 'Etica persona y sociedad' { t}
+% ???
+@attribute 'Arquitectura computacional y sistemas digitales' { t}
+@attribute 'Ciencia tecnologia y sociedad' { t}
+
+
+@data
+ITC, S2, ?,?,?,?,?,?,?,?,t,t,t,t,t,?,? % Matematicas discretas,Programacion y estructura de datos,Organizacion computacional,Matematicas para ingenieria II,Etica persona y sociedad
+ITC, S1, t,?,t,t,t,?,t,?,?,?,t,?,?,?,? % Fisica I,Matematicas para ingenieria I,Organizacion computacional,Taller de analisis y expresion verbal,Introduccion a interfaces y aplicaciones en Internet,Fundamentos de programacion
+ITC, S2, t,?,?,?,?,?,?,?,t,t,?,t,t,t,? % Fisica I,Matematicas discretas,Etica persona y sociedad,Matematicas para ingenieria II,Arquitectura computacional y sistemas digitales,Programacion y estructura de datos
+ITC, S2, t,?,?,?,?,?,?,?,t,t,?,t,t,t,? % Fisica I,Matematicas discretas,Arquitectura computacional y sistemas digitales,Matematicas para ingenieria II,Programacion y estructura de datos,Etica persona y sociedad
+ITC, S1, ?,?,t,t,t,?,?,?,?,?,t,?,?,?,? % Matematicas para ingenieria I,Organizacion computacional,Introduccion a interfaces y aplicaciones en Internet,Fundamentos de programacion
+ITC, S1, ?,?,t,?,?,?,?,t,?,t,t,t,?,?,? % Matematicas para ingenieria I,Organizacion computacional,Programacion y estructura de datos,Matematicas discretas,Economia
+ITC, S2, ?,?,?,?,?,?,?,t,t,t,?,t,?,t,t % Economia,Arquitectura computacional y sistemas digitales,Programacion y estructura de datos,Matematicas para ingenieria II,Matematicas discretas,Ciencia tecnologia y sociedad
+ITC, S1, ?,?,t,t,?,?,t,t,?,t,t,?,?,?,? % Matematicas para ingenieria I,Fundamentos de programacion,Organizacion computacional,Matematicas discretas,,Economia,Taller de analisis y expresion verbal
+ITC, S1, t,?,t,t,t,?,t,?,?,?,t,?,?,?,? % Fisica I,Matematicas para ingenieria I,Fundamentos de programacion,Introduccion a interfaces y aplicaciones en Internet,Taller de analisis y expresion verbal,Organizacion computacional
+ITC, S1, t,?,t,t,?,?,t,?,?,t,t,?,?,?,? % Fisica I,Matematicas discretas,Organizacion computacional,Fundamentos de programacion,Taller de analisis y expresion verbal,Matematicas para ingenieria I
+ITC, S2, ?,?,?,?,?,?,t,?,t,t,?,t,?,t,t % Taller de analisis y expresion verbalMatematicas discretas,Programacion y estructura de datos,Arquitectura computacional y sistemas digitales,Matematicas para ingenieria II,Ciencia tecnologia y sociedad
+ITC, S1, t,t,t,?,?,?,t,?,?,t,t,?,?,?,? % Fisica I,Organizacion computacional,Taller de analisis y expresion verbal,Matematicas discretas,Lengua extranjera,Matematicas para ingenieria I
+ITC, S2, ?,?,?,?,?,?,t,t,t,t,t,t,?,?,? % Organizacion computacional,Economia,Taller de analisis y expresion verbal,Programacion y estructura de datos,Matematicas discretas,Matematicas para ingenieria II
+ITC, S1, t,?,t,t,?,?,?,?,?,t,?,?,?,t,? % Matematicas para ingenieria I,Fundamentos de programacion,Arquitectura computacional y sistemas digitales,Matematicas discretas,Fisica I
+ITC, S1, ?,?,t,t,t,?,?,?,?,?,t,?,t,?,? % Fundamentos de programacion,Organizacion computacional,Introduccion a interfaces y aplicaciones en Internet,Etica persona y sociedad,Matematicas para ingenieria I
+ITC, S2, t,?,?,?,?,?,?,?,t,t,?,t,t,t,? % Fisica I,Matematicas discretas,Arquitectura computacional y sistemas digitales,Matematicas para ingenieria II,Programacion y estructura de datos,Etica persona y sociedad
+ITC, S2, t,?,?,?,?,?,?,t,t,t,?,t,?,t,? % Fisica I,Economia,Arquitectura computacional y sistemas digitales,Programacion y estructura de datos,Matematicas discretas,Matematicas para ingenieria II
+ITC, S1, t,t,t,?,?,?,t,?,?,t,t,?,?,?,? % Fisica I,Matematicas discretas,Organizacion computacional,Matematicas para ingenieria I,Lengua extranjera,Taller de analisis y expresion verbal
+ITC, S1, ?,?,t,t,t,?,t,?,?,t,t,?,?,?,? % Fundamentos de programacion,Matematicas para ingenieria I,Taller de analisis y expresion verbal,Introduccion a interfaces y aplicaciones en Internet,Organizacion computacional,Matematicas discretas
+ITC, S1, t,t,t,t,?,?,t,t,?,?,?,?,?,?,? % Fisica I,Economia,Taller de analisis y expresion verbal,Fundamentos de programacion,Lengua extranjera,Matematicas para ingenieria I
+
