@@ -29,7 +29,6 @@ module DataAssociation.Explore.UI.Web.Application (
 , ReactiveWebElemSelectorParam(..)
 
 , WekaEntryToItemset(..)
-, StatusReporter(..)
 
 , HtmlElem(..)
 
@@ -37,11 +36,12 @@ module DataAssociation.Explore.UI.Web.Application (
 , AprioriWebAppState(..)
 
 , WebAppMsg(..)
+, Message2UI(..)
+, msg2UI
+
+, WebAppStatusMsg(..)
 , statusUpdMsg
 , statusErrMsg
-
-, messageToJson
-, dataUpdateMsg
 
 , StatusList(..)
 , RawDataTextAreaDialog(..)
@@ -66,6 +66,7 @@ import DataAssociation.APriori.Public
 import DataAssociation.PostProcess.Descriptor
 import DataAssociation.Explore.UI.Application
 import DataAssociation.Explore.UI.State
+import DataAssociation.Explore.UI.Web.Application.Message
 import WekaData
 
 import Data.Maybe
@@ -79,16 +80,7 @@ import Control.Arrow
 
 import Text.Read ( readMaybe )
 import Text.Blaze.Html5 (Html)
-
-import qualified Network.WebSockets as WS
-
 import Text.JSON
-
-
---import Text.Blaze.Html5 hiding (map, head)
---import qualified Text.Blaze.Html5 as H
---import Text.Blaze.Html5.Attributes hiding (title, rows, accept)
---import qualified Text.Blaze.Html5.Attributes as A
 
 -----------------------------------------------------------------------------
 
@@ -108,6 +100,8 @@ instance ApplicationUITypes WebApp where
     type PostSortAppUI   = PostProcessSortBuilderUI
     type PostGroupAppUI  = PostProcessGroupBuilderUI
     type ShowAppUI       = ShowProcessedDataUI Set String
+
+    type MessagingContext = Message2UI
 
 
 instance ApplicationUI WebApp where
@@ -149,7 +143,7 @@ class ReactiveWebElemConf u where
 class (ReactiveWebElemConf u) =>
     ReactiveWebElem u state where
         type ReactiveWebElemArg
-        reqParse :: u -> ReactiveWebElemArg -> StatusReporter -> state -> IO ()
+        reqParse :: u -> ReactiveWebElemArg -> Message2UI -> state -> IO ()
 
 data SomeReactiveWebElem state = forall u . ReactiveWebElem u state =>
      SomeReactiveWebElem u
@@ -168,63 +162,28 @@ class (Itemset set it, Ord (set it), Ord it) =>
 
 -----------------------------------------------------------------------------
 
-newtype StatusReporter = StatusReporter (WebAppMsg -> IO ())
-
-
-data WebAppMsg = WebAppMsg{
-    msgValue      :: JSValue
-  , msgType       :: String
-  , msgShowMillis :: Maybe Int
-  , msgPriority   :: Int
-  , msgRaw        :: Bool
-}
-
-statusUpdMsg :: String -> WebAppMsg
-statusUpdMsg msg = WebAppMsg (showJSON msg) "status" (Just 5000) 1 False
-
-statusErrMsg :: String -> WebAppMsg
-statusErrMsg msg = WebAppMsg (showJSON msg) "error" Nothing 99 False
-
-dataUpdateMsg :: RawWekaData -> WebAppMsg
-dataUpdateMsg wData = WebAppMsg (JSObject inf) "data-info" Nothing 0 True
-    where inf = toJSObject [
-              ("name",  showJSON $ rwdName wData)
-            , ("attrs", showJSON . length $ rwdAttrs wData)
-            , ("count", showJSON . length $ rawWekaData wData)
-            ]
-
-
-messageToJson (WebAppMsg msg tpe millis priority raw) = toJSObject [
-      ("type",  showJSON tpe)
-    , ("message", msg)
-    , ("showMillis", showJSON millis)
-    , ("priority", showJSON priority)
-    ]
-
------------------------------------------------------------------------------
-
 data StatusList = StatusList{
-    statusShow :: WS.Connection -> WebAppMsg -> IO ()
+    statusShow :: Message2UI -> WebAppStatusMsg -> IO ()
   , statusHtml :: Html
 }
 
 instance HtmlElem StatusList where elemHtml = statusHtml
 
 instance StatusUI StatusList where
-    type StatusMessage = WebAppMsg
-    type MessagingContext = WS.Connection
+    type StatusMessage = WebAppStatusMsg
 
     showStatus = statusShow
 
 -----------------------------------------------------------------------------
 
 data RawDataTextAreaDialog = RawDataTextAreaDialog{
-    rawDataSendDescr :: [(String, String)] -> IO ()
+    rawDataSendDescr :: MessagingContext -> RawWekaData -> IO ()
   , rawDataHtml      :: Html
 }
 
 instance RawDataUI RawDataTextAreaDialog where
-    sendDataDescription = rawDataSendDescr
+    type RawDataDescription = RawWekaData
+    sendDataDescription     = rawDataSendDescr
 
 
 instance HtmlElem            RawDataTextAreaDialog where elemHtml = rawDataHtml
@@ -235,9 +194,9 @@ instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
 
     type ReactiveWebElemArg = [(String, JSValue)]
 
-    reqParse u jobj (StatusReporter reportStatus) state = do
-        let rawData   = wekaDataFromLines lines
-        reportStatus $ dataUpdateMsg rawData
+    reqParse u jobj reporter state = do
+        let rawData = wekaDataFromLines lines
+        msg2UI reporter $ dataUpdateMsg rawData
 
         let sparse   = wekaData2Sparse rawData
         let itemsets = map wekaEntryToItemset sparse
@@ -251,7 +210,7 @@ instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
         let cacheMsg = "Created cache with " ++ show (Map.size c) ++ " itemsets."
         putStrLn cacheMsg
 
-        reportStatus $ statusUpdMsg cacheMsg
+        msg2UI reporter $ statusUpdMsg cacheMsg
 
 
         where Just (JSString rawData) = lookup "raw-data" jobj
@@ -269,15 +228,15 @@ aprioriConfigHtml  (AprioriConfigUI (_, _, x)) = x
 instance HtmlElem AprioriConfigUI where elemHtml = aprioriConfigHtml
 
 
-setAprioriState sel u jobj (StatusReporter reportStatus) state = do
+setAprioriState sel u jobj reporter state = do
     let Ok v' = readJSON . fromJust $ lookup (reqParam u) jobj
     let    v  = read v'
     cState <- getProgramConfigState state
     let newState = sel (const v) cState
     setProgramConfigState state newState
-    reportStatus . statusUpdMsg $ "Updated apriori parameters: "
-                                ++ show (fst newState) ++ ", "
-                                ++ show (snd newState)
+    msg2UI reporter . statusUpdMsg $ "Updated apriori parameters: "
+                                   ++ show (fst newState) ++ ", "
+                                   ++ show (snd newState)
 
 -----------------------------------------------------------------------------
 
@@ -327,7 +286,7 @@ instance HtmlElem PostProcessGroupBuilderUI where
 -----------------------------------------------------------------------------
 
 data ShowProcessedDataUI set it = ShowProcessedDataUI {
-    sendDataToUI   :: [[AssocRule set it]] -> IO ()
+    sendDataToUI   :: Message2UI -> [[AssocRule set it]] -> IO ()
   , showDataHtml   :: Html
 }
 

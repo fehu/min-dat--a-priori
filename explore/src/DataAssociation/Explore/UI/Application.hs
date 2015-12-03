@@ -42,6 +42,8 @@ class ApplicationUITypes a where
     type PostGroupAppUI
     type ShowAppUI
 
+    type MessagingContext
+
 
 class ApplicationUI a where
 
@@ -58,14 +60,14 @@ class ApplicationUI a where
 
 class StatusUI u where
     type StatusMessage
-    type MessagingContext
 
     showStatus :: u -> MessagingContext -> StatusMessage -> IO ()
 
 -----------------------------------------------------------------------------
 
 class RawDataUI u where
-    sendDataDescription :: u -> [(String, String)] -> IO ()
+    type RawDataDescription
+    sendDataDescription :: u -> MessagingContext -> RawDataDescription -> IO ()
 
 class RawDataInnerRepr r where
     type RawData
@@ -82,7 +84,7 @@ class PostProcessInnerRepr u d where
 -----------------------------------------------------------------------------
 
 class ShowUI u where
-    sendDataToShow :: u set it -> [[AssocRule set it]] -> IO()
+    sendDataToShow :: u set it -> MessagingContext -> [[AssocRule set it]] -> IO()
 
 -----------------------------------------------------------------------------
 

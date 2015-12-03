@@ -3,23 +3,17 @@ wSocket.onclose = function(e) { showStatus('error', 'Connction to server closed!
 wSocket.onmessage = function(msg) {
     console.log('received message: '.concat(msg.data));
     obj = JSON.parse(msg.data);
-//     console.log('obj = '.concat(obj));
-    sTime = obj['showMillis']['Just'];
-
     waitModal(false)
-    
-    if (sTime != undefined) showTime = parseInt(sTime);
-    else showTime = undefined;
 
     switch(obj['type']) {
-      case 'error':
-           showStatus('error', obj['message'], showTime);
-           break;
+      case 'error': 
+          processStatusMsg(obj, 'error')
+          break;
       case 'status':
-          showStatus('ok', obj['message'], showTime);
+          processStatusMsg(obj, 'ok')
           break;
       case 'data-info':
-          setDataInfo(obj['message']);
+          setDataInfo(obj);
           break;
       case 'rules':
           rulesUpdate(obj['message']);
@@ -27,6 +21,13 @@ wSocket.onmessage = function(msg) {
      }
     }
 
+var processStatusMsg = function(obj, msgType){
+  sTime = obj['showMillis']['Just'];
+  if (sTime != undefined) showTime = parseInt(sTime);
+  else showTime = undefined;
+  
+  showStatus(msgType, obj['message'], showTime);
+}
 
 
 _closeBtn = '<a class=\"close\" data-dismiss=\"alert\" href=\"#\">&times;</a>';
@@ -64,3 +65,4 @@ var setDataInfo = function(inf) {
 var waitModal = function(on) {
   $('#wait-modal').modal(on ? 'show' : 'hide');
 }
+

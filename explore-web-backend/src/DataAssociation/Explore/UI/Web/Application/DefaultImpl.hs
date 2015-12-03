@@ -33,7 +33,9 @@ import Prelude hiding (head, div, span)
 import DataAssociation
 import DataAssociation.Explore.UI.Application
 import DataAssociation.Explore.UI.Web.Application
+import DataAssociation.Explore.UI.Web.Application.Message
 import DataAssociation.Explore.UI.Web.Render
+import DataAssociation.Explore.UI.Web.RulesTransfer
 
 import Data.IORef
 import qualified Data.Set as Set
@@ -177,12 +179,12 @@ loadButtonClicked = "TODO: apply changes"
 
 
 statusList = StatusList{
-    statusShow = \conn -> WS.sendTextData conn . T.pack . encode . messageToJson
+    statusShow = msg2UI
   , statusHtml = div "" ! A.id "statuses"
 }
 
 rawDataTextAreaDialog = RawDataTextAreaDialog{
-    rawDataSendDescr = undefined
+    rawDataSendDescr = \r -> msg2UI r . dataUpdateMsg
 
   , rawDataHtml = do
         mkBootstrapButton "Load Data" "btn"
@@ -251,8 +253,8 @@ postProcessGroupBuilderUI = PostProcessGroupBuilderUI $
     span "TODO" ! A.class_ "todo"
 
 showProcessedDataUI = ShowProcessedDataUI{
-    sendDataToUI = undefined,
-    showDataHtml = span "TODO" ! A.class_ "todo"
+    sendDataToUI = undefined -- \r -> msg2UI r . TODO !!!!!!!!!!!!!!!!!!!!!!!!!!! TODO !!!!!!!!!!!!!!!!!!!!!! TODO
+  , showDataHtml = span "TODO" ! A.class_ "todo"
 }
 
 

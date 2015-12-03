@@ -54,10 +54,9 @@ wsserver app iState pending = do
     state <- newStateWithInitial iState
     putStrLn "created new state"
 
-    let reportStatus = showStatus (uiStatus app) conn
-    let statusReporter = StatusReporter reportStatus
+    let message2UI = Message2UI $ WS.sendTextData conn . T.pack . encode . messageToJson
 
-    forever $ handle (\e -> reportStatus . statusErrMsg $ show (e :: SomeException))
+    forever $ handle (\e -> msg2UI message2UI . statusErrMsg $ show (e :: SomeException))
             $ do
         msg <- WS.receiveData conn
         putStrLn $ "processing message: " ++ T.unpack msg
@@ -67,7 +66,7 @@ wsserver app iState pending = do
         let Just (JSString eId) = lookup (elemNameParam app) jObj
 
         case reactiveWebElemByName app state $ fromJSString eId
-            of SomeReactiveWebElem e -> reqParse e jObj statusReporter state
+            of SomeReactiveWebElem e -> reqParse e jObj message2UI state
 
         putStrLn "done"
 
