@@ -12,7 +12,6 @@
 --
 -- |
 --
------------------------------------------------------------------------------
 
 module DataAssociation.Explore.UI.Web.Application.DefaultImpl (
 
@@ -48,7 +47,7 @@ import qualified Text.Blaze.Html5.Attributes as A
 
 import qualified Network.WebSockets as WS
 
-
+-----------------------------------------------------------------------------
 
 webApp = WebApp rawDataTextAreaDialog
                 aprioriConfigUI
@@ -120,18 +119,35 @@ divFor2 clazz n1 e1 n2 e2 =
         h3 n2
         elemHtml e2
 
+loadButtonClicked = "TODO: apply changes"
+
+-----------------------------------------------------------------------------
 
 sendMessageObjJS :: [(String, String)] -> String
 sendMessageObjJS entries = "wSocket.send(JSON.stringify({" ++ obj ++ "})); waitModal(true);"
     where obj = intercalate ","
               $ Prelude.map (\(k,v) -> "'" ++ k ++ "':" ++ v) entries
 
+elemNameParam' = elemNameParam (undefined :: WebApp)
 
+mkServerMessage elemName param pData = [
+      (elemNameParam', show elemName)
+    , (param         , pData)
+    ]
+
+-----------------------------------------------------------------------------
 
 someModal id =  div ! A.id id
                  ! A.class_ "modal fade"
                  ! customAttribute "role" "dialog"
                  ! customAttribute "aria-hidden" "true"
+
+waitModal id = someModal id . div
+             $ div ! A.class_ "modal-dialog"
+             $ i "" ! A.class_ "glyphicon glyphicon-repeat glyphicon-spin"
+
+
+-----------------------------------------------------------------------------
 
 loadDataDialog = someModal "upload-data-dialog"
                             ! A.tabindex "-1"
@@ -154,16 +170,7 @@ loadDataDialog = someModal "upload-data-dialog"
                                             )
                             mkBootstrapCloseModalButton "Cancel" "btn btn-inverse"
 
-elemNameParam' = elemNameParam (undefined :: WebApp)
-
-mkServerMessage elemName param pData = [
-      (elemNameParam', show elemName)
-    , (param         , pData)
-    ]
-
-waitModal id = someModal id . div
-             $ div ! A.class_ "modal-dialog"
-             $ i "" ! A.class_ "glyphicon glyphicon-repeat glyphicon-spin"
+-----------------------------------------------------------------------------
 
 mkBootstrapButton txt clazz = button txt ! A.type_ "button"
                                          ! A.class_ clazz
@@ -173,15 +180,14 @@ mkBootstrapCloseModalButton txt clazz =
         ! customAttribute "data-dismiss" "modal"
         ! customAttribute "aria-hidden" "true"
 
-
-loadButtonClicked = "TODO: apply changes"
-
-
+-----------------------------------------------------------------------------
 
 statusList = StatusList{
     statusShow = msg2UI
   , statusHtml = div "" ! A.id "statuses"
 }
+
+-----------------------------------------------------------------------------
 
 rawDataTextAreaDialog = RawDataTextAreaDialog{
     rawDataSendDescr = \r -> msg2UI r . dataUpdateMsg
@@ -201,6 +207,7 @@ rawDataTextAreaDialog = RawDataTextAreaDialog{
             dd space ! A.id "data-count"
 }
 
+-----------------------------------------------------------------------------
 
 mkNumberInput labelTxt id = do
     label labelTxt ! A.for id
@@ -235,11 +242,7 @@ aprioriConfigMConfUI = AprioriConfigMConfUI $ do
     mkNumberInput "Min. Confidence" "min-confidence"
     script . string $ inputChangeJS "min-confidence" "apriori-param"
 
---    label "Min. Support" ! A.for "min-support"
---    input ! A.type_ "text"
---          ! A.id "min-support"
---          ! customAttribute "data-trigger" "focus"
---    span "TODO" ! A.class_ "todo"
+-----------------------------------------------------------------------------
 
 postProcessFilterBuilderUI = PostProcessFilterBuilderUI $
     div ! A.class_ "config filter col-md-4" $
@@ -252,12 +255,14 @@ postProcessSortBuilderUI = PostProcessSortBuilderUI $
 postProcessGroupBuilderUI = PostProcessGroupBuilderUI $
     span "TODO" ! A.class_ "todo"
 
+-----------------------------------------------------------------------------
+
 showProcessedDataUI = ShowProcessedDataUI{
     sendDataToUI = undefined -- \r -> msg2UI r . TODO !!!!!!!!!!!!!!!!!!!!!!!!!!! TODO !!!!!!!!!!!!!!!!!!!!!! TODO
   , showDataHtml = span "TODO" ! A.class_ "todo"
 }
 
-
+-----------------------------------------------------------------------------
 
 
 
