@@ -56,7 +56,10 @@ wsserver app iState pending = do
 
     let message2UI = Message2UI $ WS.sendTextData conn . T.pack . encode . messageToJson
 
-    forever $ handle (\e -> msg2UI message2UI . statusErrMsg $ show (e :: SomeException))
+    forever $ handle (\e -> do let err = show (e :: SomeException)
+                               putStrLn $ "[Error] " ++ err
+                               msg2UI message2UI . statusErrMsg $ err
+                               )
             $ do
         msg <- WS.receiveData conn
         putStrLn $ "processing message: " ++ T.unpack msg

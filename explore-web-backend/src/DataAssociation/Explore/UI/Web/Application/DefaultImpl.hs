@@ -35,6 +35,7 @@ import DataAssociation.Explore.UI.Web.Application
 import DataAssociation.Explore.UI.Web.Application.Message
 import DataAssociation.Explore.UI.Web.Render
 import DataAssociation.Explore.UI.Web.RulesTransfer
+import DataAssociation.Itemset.SetImpl
 
 import Data.IORef
 import qualified Data.Set as Set
@@ -81,7 +82,7 @@ instance RenderableWebPage WebApp where
                     hr
                     section ! A.id "apply"
                             ! A.class_ "span9" $
-                        button "Apply" ! A.onclick loadButtonClicked
+                        button "Apply" ! A.onclick (stringValue loadButtonClicked)
                     section ! A.id "rules"
                             ! A.class_ "span9" $ do
                         h2 "Rules"
@@ -119,7 +120,7 @@ divFor2 clazz n1 e1 n2 e2 =
         h3 n2
         elemHtml e2
 
-loadButtonClicked = "TODO: apply changes"
+loadButtonClicked = sendMessageObjJS [("elem-id", show "update-rules")]
 
 -----------------------------------------------------------------------------
 
@@ -258,7 +259,7 @@ postProcessGroupBuilderUI = PostProcessGroupBuilderUI $
 -----------------------------------------------------------------------------
 
 showProcessedDataUI = ShowProcessedDataUI{
-    sendDataToUI = undefined -- \r -> msg2UI r . TODO !!!!!!!!!!!!!!!!!!!!!!!!!!! TODO !!!!!!!!!!!!!!!!!!!!!! TODO
+    sendDataToUI = \r -> msg2UI r . rulesUpdateMsg
   , showDataHtml = span "TODO" ! A.class_ "todo"
 }
 

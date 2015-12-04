@@ -13,7 +13,9 @@ maintainer:          -
 -- copyright:
 category:            Web
 build-type:          Simple
--- extra-source-files:
+extra-source-files:  todo.md
+                     static/apriori.js
+                     static/apriori.css
 cabal-version:       >=1.10
 
 library
@@ -29,7 +31,7 @@ library
                        json         >= 0.9.1,
                        text         >= 1.2.1,
                        transformers >= 0.3.0,
-                       filepath     >= 1.4.0
+                       filepath     >= 0.12.0
   hs-source-dirs:      src
   exposed-modules:     DataAssociation.Explore.UI.Web.Application
                        DataAssociation.Explore.UI.Web.Application.DefaultImpl

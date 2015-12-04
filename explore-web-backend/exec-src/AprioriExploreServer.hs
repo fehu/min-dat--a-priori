@@ -12,13 +12,14 @@
 --
 -- |
 --
------------------------------------------------------------------------------
 
 module Main ( main ) where
 
 
 import DataAssociation
 import DataAssociation.Itemset.SetImpl
+import DataAssociation.SimpleRulesGenerator
+
 import DataAssociation.Explore.UI.Web.Server
 import DataAssociation.Explore.UI.Web.WebsocketServer
 import DataAssociation.Explore.UI.Web.Application
@@ -36,13 +37,20 @@ import qualified GHC.IO.Handle.FD as FD
 
 import qualified Network.WebSockets as WS
 
+-----------------------------------------------------------------------------
 
 instance WekaEntryToItemset Set [Char] where
-    wekaEntryToItemset (WEntry vset) = Set.map (\(WVal _ v) -> v) vset
+    wekaEntryToItemset (WEntry vset) = Set.map f vset
+        where f (WVal (WekaAttrNom a [_]) _) = a
+              f (WVal (WekaAttrNom _  _ ) v) = v
+              f (WVal (WekaAttrNum _)     _) = error "The data is expected to be nominal"
+
+-----------------------------------------------------------------------------
 
 main = do
     let app = Impl.webApp
-    let iState = InitialState (undefined :: AprioriWebAppCache Set String)
+    let iState = InitialState (error "no data to analyse has been uploaded"
+                                            :: AprioriWebAppCache Set String)
                               (RawWekaData "" [] [])
                               (MinSupport 0, MinConfidence 0)
 

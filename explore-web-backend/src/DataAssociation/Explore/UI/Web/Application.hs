@@ -61,6 +61,7 @@ module DataAssociation.Explore.UI.Web.Application (
 ) where
 
 import DataAssociation
+import DataAssociation.Abstract
 import DataAssociation.Definitions
 import DataAssociation.APriori.Public
 import DataAssociation.PostProcess.Descriptor
@@ -114,14 +115,17 @@ instance ApplicationUI WebApp where
     uiStatus     (WebApp _ _ _ _ _ _ u) = u
 
 instance ReactiveWebElemSelectorParam WebApp where elemNameParam _ = "elem-id"
-instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
-    ReactiveWebElemSelector WebApp (AprioriWebAppState set it) where
+instance ( Show WekaDataAttribute
+         , WekaEntryToItemset Set String
+         , AssociationRulesGenerator Set String) =>
+    ReactiveWebElemSelector WebApp (AprioriWebAppState Set String) where
     reactiveWebElemByName a _ name =
-        case name of "raw-data"       -> SomeReactiveWebElem . uiRawData $ a
+        case name of "raw-data"       -> SomeReactiveWebElem $ uiRawData a
                      "min-support"    -> SomeReactiveWebElem . aprioriConfigMSup  . uiConfig $ a
                      "min-confidence" -> SomeReactiveWebElem . aprioriConfigMConf . uiConfig $ a
+                     "update-rules"   -> SomeReactiveWebElem $ uiShow a
 
-type AprioriWebAppCache set it = AprioriCache set it
+type AprioriWebAppCache set it = (AprioriCache set it, [set it])
 type AprioriWebAppState set it = ApplicationState (AprioriWebAppCache set it)
                                                   (MinSupport, MinConfidence)
 
@@ -200,12 +204,16 @@ instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
 
         let sparse   = wekaData2Sparse rawData
         let itemsets = map wekaEntryToItemset sparse
+
+        putStrLn "itemsets"
+
         let cache = mkAprioriCache itemsets
 
         setRawData state rawData
         putStrLn $ "Read " ++ show (length itemsets) ++ " itemsets."
 
-        setCacheState state cache
+        setCacheState state (cache, itemsets)
+        putStrLn $ "setCacheState " ++ show cache
         let AprioriCache c = cache
         let cacheMsg = "Created cache with " ++ show (Map.size c) ++ " itemsets."
         putStrLn cacheMsg
@@ -234,9 +242,10 @@ setAprioriState sel u jobj reporter state = do
     cState <- getProgramConfigState state
     let newState = sel (const v) cState
     setProgramConfigState state newState
-    msg2UI reporter . statusUpdMsg $ "Updated apriori parameters: "
-                                   ++ show (fst newState) ++ ", "
-                                   ++ show (snd newState)
+    msg2UI reporter DoneMsg
+--    msg2UI reporter . statusUpdMsg $ "Updated apriori parameters: "
+--                                   ++ show (fst newState) ++ ", "
+--                                   ++ show (snd newState)
 
 -----------------------------------------------------------------------------
 
@@ -293,5 +302,20 @@ data ShowProcessedDataUI set it = ShowProcessedDataUI {
 instance HtmlElem (ShowProcessedDataUI set it) where elemHtml = showDataHtml
 
 instance ShowUI ShowProcessedDataUI where sendDataToShow = sendDataToUI
+
+instance ReactiveWebElemConf (ShowProcessedDataUI set it) where reqParam = const ""
+
+instance (AssociationRulesGenerator Set String) =>
+    ReactiveWebElem (ShowProcessedDataUI Set String) (AprioriWebAppState Set String) where
+        type ReactiveWebElemArg = [(String, JSValue)]
+        reqParse u jobj reporter state = do
+            (cache, transactions) <- getCacheState state
+            (minsup, minconf) <- getProgramConfigState state
+            let largeSets = aprioriCached cache minsup
+            let rules  = generateAssociationRules minconf transactions largeSets
+            setCurrentRules state [rules]   -- TODO : Postprocess
+            sendDataToShow u reporter [rules]
+
+-----------------------------------------------------------------------------
 
 

@@ -26,6 +26,9 @@ module DataAssociation.Explore.UI.State (
 , getCacheState
 , setCacheState
 
+, getCurrentRules
+, setCurrentRules
+
 ) where
 
 --import Control.Concurrent.MVar
@@ -49,6 +52,7 @@ data ApplicationState cache conf = ApplicationState{
   , postProcessFilterState      :: IORef (Set RuleFilter)
   , postProcessSortState        :: IORef [RuleOrder]
   , postProcessGroupState       :: IORef (Maybe RuleGroup)
+  , currentRules                :: IORef [[AssocRule Set String]]
 }
 
 data InitialState cache wData conf = InitialState cache wData conf
@@ -62,8 +66,9 @@ newState cache wData conf = do
     sPPF   <- newIORef Set.empty
     sPPS   <- newIORef []
     sPPG   <- newIORef Nothing
+    sRules <- newIORef []
 
-    return $ ApplicationState sCache sData sConf sPPF sPPS sPPG
+    return $ ApplicationState sCache sData sConf sPPF sPPS sPPG sRules
 
 instance RawDataInnerRepr (ApplicationState cache conf) where
     type RawData = RawWekaData
@@ -87,4 +92,7 @@ setProgramConfigState = writeIORef . programConfigState
 
 getCacheState = readIORef . cacheState
 setCacheState = writeIORef . cacheState
+
+getCurrentRules = readIORef . currentRules
+setCurrentRules = writeIORef . currentRules
 

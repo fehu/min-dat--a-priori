@@ -26,14 +26,22 @@ module DataAssociation.Explore.UI.Web.Application.Message (
 , Message2UI(..)
 , msg2UI
 
+, DoneMsg(..)
+
 , WebAppStatusMsg(..)
 , statusUpdMsg
 , statusErrMsg
 
+, WebAppDataInfoMsg(..)
 , dataUpdateMsg
+
+, WebAppDataRulesMsg(..)
+, rulesUpdateMsg
 
 ) where
 
+import DataAssociation
+import DataAssociation.Explore.UI.Web.RulesTransfer
 import WekaData
 
 import Text.JSON
@@ -51,6 +59,13 @@ data Message2UI = Message2UI (SomeMsg -> IO ())
 
 msg2UI :: (WebAppMsg msg) => Message2UI -> msg -> IO ()
 msg2UI (Message2UI send) = send . SomeMsg
+
+-----------------------------------------------------------------------------
+
+data DoneMsg = DoneMsg
+
+instance WebAppMsg DoneMsg where messageType   _ = "done"
+                                 messageToJson _ = makeObj [("type", showJSON "done")]
 
 -----------------------------------------------------------------------------
 
@@ -97,6 +112,18 @@ dataUpdateMsg wData = WebAppDataInfoMsg . JSObject $ toJSObject [
             , ("count", showJSON . length $ rawWekaData wData)
             ]
 
+
+-----------------------------------------------------------------------------
+
+newtype WebAppDataRulesMsg set it = WebAppDataRulesMsg (GroupedRules set it)
+
+instance (Itemset set it) =>
+    WebAppMsg (WebAppDataRulesMsg set it) where
+        messageType = const "rules"
+        messageToJson (WebAppDataRulesMsg msg) = groupedRules2JSON msg
+
+rulesUpdateMsg :: GroupedRules set it -> WebAppDataRulesMsg set it
+rulesUpdateMsg = WebAppDataRulesMsg
 
 -----------------------------------------------------------------------------
 
