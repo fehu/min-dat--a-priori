@@ -6,7 +6,7 @@
 }
 
 
-header {
+body > header {
   background-color:black;
   color:white;
   text-align:center;
@@ -75,6 +75,12 @@ input:required:invalid {
   }
 }
 
+
+
+
+
+
+
 #rules .rules-groups{
   
 }
@@ -129,3 +135,30 @@ assocrule arrow i.glyphicon {
 assocrule item {
   text-decoration: underline;
 }
+
+
+
+
+
+
+
+
+assocrule:nth-child(2n){
+  background: #b3b3b3; 
+}
+
+#rules header *{
+  background: #ffffff; 
+  font-weight: bold;
+  position: relative;
+  float: right;
+}
+
+#rules header > support {
+  right: 45px;
+}
+
+#rules header > confidence {
+  right: 10px;
+}
+

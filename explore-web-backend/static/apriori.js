@@ -94,10 +94,18 @@ var mkAssocRule = function(rule) {
 var _rulesSelector = function() { return $('#rules .rules-groups') };
 
 var newAssocRules = function(rules) {
+  _rulesSelector().children().remove();
+  
+  sup    = '<support>Support</support>'
+  conf   = '<confidence>Confidence</confidence>'
+  header = '<header class="container">' + conf + sup + '</header>';
+  
+  _rulesSelector().append($(header));
+  
   for (i in rules) {
     group = rules[i].reduce( function(acc, rule){ return acc.add(mkAssocRule(rule)); }, $() );
     console.log('group = ' + group);
-    _rulesSelector().append(group);
+    _rulesSelector().append($('<group/>').append(group));
   }
 };
 
