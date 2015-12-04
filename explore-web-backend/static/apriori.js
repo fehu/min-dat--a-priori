@@ -123,16 +123,22 @@ var _filterPartSelected = null;
 
 var filterContains = $('<span filter-type="contains">Contains <input type="text"/></span>');
 
-var mkFilterNot = function() { return $('<span filter-type="not">Not </span>').append(filterPartSelectorSel()) };
+var mkFilterNot = function() { return $('<span filter-type="not">Not </span>').append(mkFilterConstructor()) };
 
 var mkFilterConstructor = function() { 
-  return filterPartSelectorSel().clone().removeAttr('id').show()
-          .append($('<script/>').append(_prepareDropdown))
+  return _filterPartSelectorSel().clone().removeAttr('id').show()
+          .append(
+            $('<script/>')
+              .append(prepareDropdownJS('#create-contains', 'filterContains'))
+              .append(prepareDropdownJS('#create-not', 'mkFilterNot()'))
+          )
 };
 
-var _prepareDropdown = '$("#create-contains").click(function(e) { createFilterPartFromSelector(e.currentTarget, filterContains.clone()) })';
+var prepareDropdownJS = function(trigger, elem){
+  return '$("' + trigger + '").click(function(e) { createFilterPartFromSelector(e.currentTarget, ' + elem + '.clone()) });'
+};
 
-var filterPartSelectorSel = function() { return $('#filter-part-menu') };
+var _filterPartSelectorSel = function() { return $('#filter-part-menu') };
 var filterConfigSel       = function() { return $('.config.filter') };
 
 
@@ -156,7 +162,7 @@ var setConstructorContentsAndShow = function(c){
 
 
 var initConstructorDialog = function(){
-  constructorDialogSel().on('hidden', function () { constructorDialogContentsSel().children().remove(); });
+  constructorDialogSel().on('hidden.bs.modal', function () { constructorDialogContentsSel().children().remove(); });
 }
 
 
