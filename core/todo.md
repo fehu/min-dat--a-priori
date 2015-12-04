@@ -7,3 +7,5 @@ TO DO
 - [x] adapt 'apriori' for inner testing
 
 - [ ] check itemsets cache creation (supermarket.arff)
+
+- [ ] add a cached version of apriori, that updates the cache.

@@ -84,7 +84,7 @@ apriori' :: (Ord (set it), Ord it, Itemset set it) =>
 apriori' mSup@(MinSupport minsup) tr@(transactions, transactionsSize) seeds acc debugAcc =
     if Map.null next then (acc, reverse debugAcc)
                      else apriori' mSup tr next (Map.union acc next) (dd:debugAcc)
-    where next = Map.filter (>= minsup) cCount
+    where next = Map.filter (> minsup) cCount
           cCount     = Map.map (calculateSupport transactionsSize) $
                                countSupported transactions candidates
           (joined, pruned) = aprioriGen' $ Map.keys seeds
