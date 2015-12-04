@@ -297,11 +297,25 @@ showProcessedDataUI = ShowProcessedDataUI{
 
 -----------------------------------------------------------------------------
 
+selectSideRadio = do span "Rule side: "
+                     div  ! A.class_ "btn-group"
+                          ! dataAttribute "toggle" "buttons"
+                          $ do
+                                mkRadio "Left"
+                                mkRadio "Right"
+
+mkRadio txt = label ! A.class_ "btn btn-primary" $ do
+                  input ! A.type_ "radio"
+                        ! A.name "options"
+                        ! A.autocomplete "off"
+                  txt
+
 constructorDialog = someModal "constructor-dialog"
                    $ div ! A.class_ "modal-dialog"
                    $ div ! A.class_ "modal-content"
-                   $ do div ! A.class_ "modal-header"
-                            $ mkBootstrapCloseModalButton "×" "close"
+                   $ do div ! A.class_ "modal-header" $ do
+                            mkBootstrapCloseModalButton "×" "close"
+                            selectSideRadio
                         div "" ! A.class_ "contents"
                         div ! A.class_ "modal-footer" $ do
                             mkBootstrapCloseModalButton "Apply" "btn btn-primary"
