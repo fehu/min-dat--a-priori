@@ -145,7 +145,7 @@ someModal id =  div ! A.id id
 
 waitModal id = someModal id . div
              $ div ! A.class_ "modal-dialog"
-             $ i "" ! A.class_ "glyphicon glyphicon-repeat glyphicon-spin"
+             $ i "" ! A.class_ "glyphicon glyphicon-refresh glyphicon-spin"
 
 
 -----------------------------------------------------------------------------
@@ -260,7 +260,7 @@ postProcessGroupBuilderUI = PostProcessGroupBuilderUI $
 
 showProcessedDataUI = ShowProcessedDataUI{
     sendDataToUI = \r -> msg2UI r . rulesUpdateMsg
-  , showDataHtml = span "TODO" ! A.class_ "todo"
+  , showDataHtml = div "" ! A.class_ "rules-groups"
 }
 
 -----------------------------------------------------------------------------

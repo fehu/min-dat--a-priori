@@ -120,7 +120,10 @@ newtype WebAppDataRulesMsg set it = WebAppDataRulesMsg (GroupedRules set it)
 instance (Itemset set it) =>
     WebAppMsg (WebAppDataRulesMsg set it) where
         messageType = const "rules"
-        messageToJson (WebAppDataRulesMsg msg) = groupedRules2JSON msg
+        messageToJson (WebAppDataRulesMsg msg) = makeObj [
+            ("type", showJSON "rules")
+          , ("rules", groupedRules2JSON msg)
+         ]
 
 rulesUpdateMsg :: GroupedRules set it -> WebAppDataRulesMsg set it
 rulesUpdateMsg = WebAppDataRulesMsg

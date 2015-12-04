@@ -1,4 +1,6 @@
 
+/ * Socket, messages handling * /
+
 wSocket.onclose = function(e) { showStatus('error', 'Connction to server closed!') };
 wSocket.onmessage = function(msg) {
     console.log('received message: '.concat(msg.data));
@@ -16,10 +18,10 @@ wSocket.onmessage = function(msg) {
           setDataInfo(obj);
           break;
       case 'rules':
-          rulesUpdate(obj['message']);
+          newAssocRules(obj['rules']);
           break;
      }
-    }
+    };
 
 var processStatusMsg = function(obj, msgType){
   sTime = obj['showMillis']['Just'];
@@ -27,7 +29,7 @@ var processStatusMsg = function(obj, msgType){
   else showTime = undefined;
   
   showStatus(msgType, obj['message'], showTime);
-}
+};
 
 
 _closeBtn = '<a class=\"close\" data-dismiss=\"alert\" href=\"#\">&times;</a>';
@@ -54,15 +56,49 @@ var showStatus = function(type, msg, showTime){
 
     if (showTime != undefined)
       window.setTimeout(function() { status.alert('close'); }, showTime);
-  }
+  };
+
+var waitModal = function(on) {
+  $('#wait-modal').modal(on ? 'show' : 'hide');
+};
+
+/ * Data Info * /
 
 var setDataInfo = function(inf) {
     $('#data-name').text(inf['name']);
     $('#data-attrs').text(inf['attrs']);
     $('#data-count').text(inf['count']);
+};
+
+/ * Assoc. Rules * /
+
+var mkItems = function(itemset) {
+  return itemset.reduce(
+    function(acc, v, i){ item = '<item>' + v + '</item>'; 
+                         return acc + (i==0 ? item : ', ' + item)
+                       },
+    "" 
+  )
 }
 
-var waitModal = function(on) {
-  $('#wait-modal').modal(on ? 'show' : 'hide');
-}
+var mkAssocRule = function(rule) {
+  left  = '<left>' + mkItems(rule['left']) + '</left>';
+  right = '<right>' + mkItems(rule['right']) + '</right>';
+  arrow = '<arrow><i class="glyphicon glyphicon-arrow-right"/></arrow>';
+  support    = '<support>' + rule['support'] + '</support>';
+  confidence = '<confidence>' + rule['confidence'] + '</confidence>';
+  assocrule = '<assocrule class="row">' + left + arrow + right + support + confidence + '</assocrule>';
+  return $(assocrule)
+};
+
+var _rulesSelector = function() { return $('#rules .container') };
+
+var newAssocRules = function(rules) {
+  for (i in rules) {
+    group = rules[i].reduce( function(acc, rule){ return acc.add(mkAssocRule(rule)); }, $() );
+    console.log('group = ' + group);
+    _rulesSelector().append(group);
+  }
+};
+
 

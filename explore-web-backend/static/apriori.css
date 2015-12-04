@@ -74,3 +74,58 @@ input:required:invalid {
     transform: rotate(359deg);
   }
 }
+
+#rules .rules-groups{
+  
+}
+
+assocrule {
+  background-color: lightgray;
+  display: block;
+}
+
+assocrule > * {
+  position: relative;
+  min-height: 1px;
+/*   padding-right: 15px; */
+  padding-left: 15px;
+  float: left;
+}
+
+assocrule left {
+  text-align: right;
+  width: 40%;
+}
+
+assocrule right {
+  text-align: left;
+  width: 40%;
+/*   margin-left: 8px; */
+}
+
+assocrule arrow{
+  text-align: center;
+  min-width: 20px;
+  width: 4%;
+}
+
+assocrule support{
+  width: 8%;
+}
+
+assocrule confidence{
+  width: 8%;
+}
+
+assocrule arrow i.glyphicon {
+  -webkit-transform:scaleX(3);
+  -moz-transform:scaleX(3);
+  -o-transform:scaleX(3);
+  
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+assocrule item {
+  text-decoration: underline;
+}
