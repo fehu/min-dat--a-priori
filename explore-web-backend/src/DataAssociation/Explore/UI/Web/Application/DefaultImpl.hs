@@ -87,6 +87,10 @@ instance RenderableWebPage WebApp where
                             ! A.class_ "span9" $ do
                         h2 "Rules"
                         elemHtml $ uiShow app
+                footer $ do
+                    "See project on "
+                    a ! A.href "https://github.com/fehu/min-dat--a-priori" $
+                        img ! A.src "https://assets-cdn.github.com/images/modules/logos_page/GitHub-Logo.png"
             loadDataDialog
             waitModal "wait-modal"
 

@@ -163,3 +163,28 @@ assocrule:nth-child(2n){
   right: 10px;
 }
 
+
+
+
+footer a img {
+  height:15px;
+  vertical-align: top;
+}
+
+footer {
+  position: relative;
+  bottom: 0px;
+  width: 100%;
+  text-align: center;
+  padding-top: 7px;
+  padding-bottom: 2px;
+  border-top: solid black;
+  margin-top: 20px;
+  /* font-variant: small-caps; */
+  font-weight: bold;
+  /* font-style: italic; */
+}
+/*
+body > .container {
+  height: 100%;
+}*/
