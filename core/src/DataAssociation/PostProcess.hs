@@ -10,6 +10,7 @@
 module DataAssociation.PostProcess (
 
   PostProcess(..)
+, postProcess
 
 ) where
 
@@ -20,14 +21,16 @@ import DataAssociation
 
 newtype PostProcess set it = PostProcess ([AssocRule set it] -> [AssocRule set it])
 
+
+
 postProcess :: PostProcess set it -> [AssocRule set it] -> [AssocRule set it]
 postProcess (PostProcess f) = f
 
-filterRuleFrom :: Itemset set item => (set item -> Bool) -> PostProcess set item
-filterRuleFrom f = PostProcess (filter (f . ruleFrom))
-
-filterRuleFollows :: Itemset set item => (set item -> Bool) -> PostProcess set item
-filterRuleFollows f = PostProcess (filter (f . ruleFollows))
+--filterRuleFrom :: Itemset set item => (set item -> Bool) -> PostProcess set item
+--filterRuleFrom f = PostProcess (filter (f . ruleFrom))
+--
+--filterRuleFollows :: Itemset set item => (set item -> Bool) -> PostProcess set item
+--filterRuleFollows f = PostProcess (filter (f . ruleFollows))
 
 
 

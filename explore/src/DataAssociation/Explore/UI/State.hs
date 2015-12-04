@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies, FlexibleInstances #-}
+{-# LANGUAGE TypeFamilies, FlexibleInstances, DeriveDataTypeable #-}
 
 -----------------------------------------------------------------------------
 --
@@ -41,13 +41,14 @@ import DataAssociation.Explore.UI.Application
 import WekaData
 
 import Data.IORef
+import Data.Typeable
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as Set
 
 -----------------------------------------------------------------------------
 
-newtype Item = Item String deriving (Eq, Ord)
+newtype Item = Item String deriving (Eq, Ord, Typeable)
 instance Show Item where show (Item s) = s
 instance Read Item where readsPrec d r = [(Item x, y)]
                                    where [(x, y)] = readsPrec d r

@@ -29,6 +29,7 @@ instance (Ord it, Show it) =>
     Itemset Set it where
         setSize = size
         contains = flip isSubsetOf
+        containsItem = flip member
         listItems = toList
         newItemset = fromList
         insertItem = insert

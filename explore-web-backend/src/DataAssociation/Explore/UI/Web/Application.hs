@@ -66,6 +66,7 @@ import DataAssociation
 import DataAssociation.Abstract
 import DataAssociation.Definitions
 import DataAssociation.APriori.Public
+import DataAssociation.PostProcess
 import DataAssociation.PostProcess.Descriptor
 import DataAssociation.Explore.UI.Application
 import DataAssociation.Explore.UI.State
@@ -346,16 +347,22 @@ instance ShowUI ShowProcessedDataUI where sendDataToShow = sendDataToUI
 
 instance ReactiveWebElemConf (ShowProcessedDataUI set it) where reqParam = const ""
 
-instance (AssociationRulesGenerator Set Item) =>
+instance ( AssociationRulesGenerator Set Item ) => -- , PostProcessInnerRepr (AprioriWebAppState Set Item) (RuleFilter Item)
     ReactiveWebElem (ShowProcessedDataUI Set Item) (AprioriWebAppState Set Item) where
         type ReactiveWebElemArg = [(String, JSValue)]
         reqParse u jobj reporter state = do
             (cache, transactions) <- getCacheState state
             (minsup, minconf) <- getProgramConfigState state
+            filterDescrs <- getPostProcess state
+            let filters = map postProcessFromDescriptor (filterDescrs :: [RuleFilter Item])
+            let postFilter xs = foldr postProcess xs filters
+
             let largeSets = aprioriCached cache minsup
             let rules  = generateAssociationRules minconf transactions largeSets
-            setCurrentRules state [rules]   -- TODO : Postprocess
-            sendDataToShow u reporter [rules]
+            let filtered = postFilter rules
+
+            setCurrentRules state [filtered]   -- TODO : Postprocess
+            sendDataToShow u reporter [filtered]
 
 -----------------------------------------------------------------------------
 

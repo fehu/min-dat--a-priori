@@ -24,6 +24,6 @@ class ExploreProgram cache where
     associationRules :: cache set it
                      -> MinSupport
                      -> MinConfidence
-                     -> [PostProcessDescriptor]
+                     -> [PostProcessDescriptor set it]
                      -> [AssocRule set it]
 

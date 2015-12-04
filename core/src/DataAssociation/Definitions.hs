@@ -26,9 +26,10 @@ import Control.Arrow ( (&&&) )
 class (Eq (set item), Show (set item), Show item) =>
     Itemset set item where
         -- | a `contains` b
-        contains  :: set item -> set item -> Bool
-        setSize   :: set item -> Int
-        listItems :: set item -> [item]
+        contains     :: set item -> set item -> Bool
+        containsItem :: set item -> item -> Bool
+        setSize      :: set item -> Int
+        listItems    :: set item -> [item]
 
         -- | returns the elements contained in the first argument
         --                                     and not the second
