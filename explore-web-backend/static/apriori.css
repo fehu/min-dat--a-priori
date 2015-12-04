@@ -134,6 +134,7 @@ assocrule arrow i.glyphicon {
 
 assocrule item {
   text-decoration: underline;
+  display: inline-table;
 }
 
 
