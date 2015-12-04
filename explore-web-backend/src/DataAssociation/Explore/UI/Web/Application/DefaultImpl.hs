@@ -199,7 +199,7 @@ rawDataTextAreaDialog = RawDataTextAreaDialog{
     rawDataSendDescr = \r -> msg2UI r . dataUpdateMsg
 
   , rawDataHtml = do
-        mkBootstrapButton "Load Data" "btn"
+        mkBootstrapButton "Load Data" "btn btn-default"
             ! customAttribute "data-toggle" "modal"
             ! customAttribute "data-target" "#upload-data-dialog"
         hr
