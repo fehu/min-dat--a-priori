@@ -127,6 +127,7 @@ instance ( Show WekaDataAttribute
                      "min-support"    -> SomeReactiveWebElem . aprioriConfigMSup  . uiConfig $ a
                      "min-confidence" -> SomeReactiveWebElem . aprioriConfigMConf . uiConfig $ a
                      "update-rules"   -> SomeReactiveWebElem $ uiShow a
+                     "post-filter"    -> SomeReactiveWebElem $ uiPostFilter a
 
 type AprioriWebAppCache set it = (AprioriCache set it, [set it])
 type AprioriWebAppState set it = ApplicationState (AprioriWebAppCache set it)
@@ -280,6 +281,43 @@ newtype PostProcessFilterBuilderUI = PostProcessFilterBuilderUI Html
 
 instance HtmlElem PostProcessFilterBuilderUI where
     elemHtml (PostProcessFilterBuilderUI h) = h
+
+instance ReactiveWebElemConf PostProcessFilterBuilderUI where reqParam _ = undefined -- "builder"
+
+instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
+    ReactiveWebElem PostProcessFilterBuilderUI (AprioriWebAppState set it) where
+        type ReactiveWebElemArg = [(String, JSValue)]
+        reqParse u jobj reporter state =
+            do putStrLn $ "jobj = " ++ show jobj
+               putStrLn $ "descriptorStr = " ++ show descriptorStr
+               let descriptor = read descriptorStr
+               putStrLn $ "descriptor = " ++ show descriptor
+               setPostProcess state [descriptor :: RuleFilter Item]
+               msg2UI reporter DoneMsg
+            where descriptorStr = fromMaybe (error "failed to read filter " ++ show jobj)
+                                            mbDescriptorStr
+                  mbDescriptorStr = do
+                      JSString rulePart           <- lookup "rule-side" jobj
+                      JSArray [JSObject builder]  <- lookup "builder"   jobj
+                      let itemsetFilter = postProcessFromJObj $ fromJSObject builder
+                      return $ strConstructor [ "RuleFilter"
+                                              , fromJSString rulePart
+                                              , itemsetFilter]
+
+
+inParenthesis s  = "(" ++ s ++ ")"
+strConstructor = inParenthesis . unwords
+
+postProcessFromJObj [(k, JSString v)] = strConstructor [k, show $ fromJSString v]
+postProcessFromJObj [(k, JSArray [JSObject o])] = strConstructor [k, postProcessFromJObj
+                                                                     $ fromJSObject o  ]
+postProcessFromJObj [(k, JSArray [JSObject l, JSObject r])] =
+    strConstructor[k, postProcessFromJObj $ fromJSObject l
+                    , postProcessFromJObj $ fromJSObject r]
+
+postProcessFromJObj [] = ""
+
+postProcessFromJObj x = error $ "postProcessFromJObj: not matched " ++ show x
 
 -----------------------------------------------------------------------------
 

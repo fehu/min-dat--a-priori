@@ -29,6 +29,13 @@ wSocket.onmessage = function(msg) {
      }
     };
 
+var sendMessageToServer = function(msgObj) {
+  str = JSON.stringify(msgObj);
+  console.log('send message: ' + str);
+  wSocket.send(str); 
+  waitModal(true); 
+}
+    
 var processStatusMsg = function(obj, msgType){
   sTime = obj['showMillis']['Just'];
   if (sTime != undefined) showTime = parseInt(sTime);
@@ -121,9 +128,9 @@ var newAssocRules = function(rules) {
 
 var _filterPartSelected = null;
 
-var filterContains = $('<span filter-type="contains">Contains <input type="text"/></span>');
+var filterContains = $('<cpart type="Contains">Contains <input type="text"/></cpart>');
 
-var mkFilterNot = function() { return $('<span filter-type="not">Not </span>').append(mkFilterConstructor()) };
+var mkFilterNot = function() { return $('<cpart type="Not">Not </cpart>').append(mkFilterConstructor()) };
 
 var mkFilterConstructor = function() { 
   return _filterPartSelectorSel().clone().removeAttr('id').show()
@@ -146,14 +153,20 @@ var filterConfigSel       = function() { return $('.config.filter') };
 var createFilterPartFromSelector = function(t, part){ $(t).parents('.create-filter-part').replaceWith(part) };
 
 var initFilterConfig = function(){
-  $('.btn-success', filterConfigSel()).click(function (){ setConstructorContentsAndShow(mkFilterConstructor()) });
+  $('.btn-success', filterConfigSel()).click(function (){ 
+    _constructorServerCall = "post-filter";
+    setConstructorContentsAndShow(mkFilterConstructor());
+  });
 };
 
 
 /* * Constructor Dialog * */
 
+var _constructorServerCall = null;
+
 var constructorDialogSel            = function() { return $('#constructor-dialog')  };
 var constructorDialogContentsSel    = function() { return $('#constructor-dialog .contents')  };
+var constructorDialogRuleSideSel    = function() { return $('#constructor-dialog .rule-side')  };
 
 var setConstructorContentsAndShow = function(c){
   constructorDialogContentsSel().append(c);
@@ -162,10 +175,47 @@ var setConstructorContentsAndShow = function(c){
 
 
 var initConstructorDialog = function(){
-  constructorDialogSel().on('hidden.bs.modal', function () { constructorDialogContentsSel().children().remove(); });
+  constructorDialogSel().on('hidden.bs.modal', function () { 
+    constructorDialogContentsSel().children().remove(); 
+    _constructorServerCall = null;
+  });
+  $('.modal-footer .btn-primary', constructorDialogSel()).click(handleConstructorSubmit);
 }
 
+var handleConstructorSubmit = function(event){
+  
+  side = $('.active :radio', constructorDialogRuleSideSel()).val()
+  if(side == undefined) {
+    event.stopPropagation();
+    alert('Choose Rule Side');
+  }
+  else sendMessageToServer({ 'elem-id': _constructorServerCall, 'rule-side': side, 'builder': collectConstructed() })
+}
 
+var collectConstructed = function(){
+  f = function(x){
+    return $('> cpart', x).toArray().map(function(part) {
+      var res = {};
+      console.log('part = ' + part);
+      tpe = part.attributes['type'].value;
+      console.log('tpe = ' + tpe);
+      switch (tpe){
+        case 'Contains': 
+          res[tpe] = $('input', part).val();
+          break;
+        case 'Not':
+          res[tpe] = f(part);
+          break;
+        case 'And':
+        case 'Or':
+          // TODO
+          break;
+      }
+      return res
+    })
+  }
+  return f(constructorDialogContentsSel());
+}
 
 
 

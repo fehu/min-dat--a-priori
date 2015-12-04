@@ -131,7 +131,8 @@ loadButtonClicked = sendMessageObjJS [("elem-id", show "update-rules")]
 -----------------------------------------------------------------------------
 
 sendMessageObjJS :: [(String, String)] -> String
-sendMessageObjJS entries = "wSocket.send(JSON.stringify({" ++ obj ++ "})); waitModal(true);"
+sendMessageObjJS entries = "sendMessageToServer({" ++ obj ++ "});"
+--"wSocket.send(JSON.stringify({" ++ obj ++ "})); waitModal(true);"
     where obj = intercalate ","
               $ Prelude.map (\(k,v) -> "'" ++ k ++ "':" ++ v) entries
 
@@ -298,7 +299,7 @@ showProcessedDataUI = ShowProcessedDataUI{
 -----------------------------------------------------------------------------
 
 selectSideRadio = do span "Rule side: "
-                     div  ! A.class_ "btn-group"
+                     div  ! A.class_ "rule-side btn-group"
                           ! dataAttribute "toggle" "buttons"
                           $ do
                                 mkRadio "Left"
@@ -306,9 +307,9 @@ selectSideRadio = do span "Rule side: "
 
 mkRadio txt = label ! A.class_ "btn btn-primary" $ do
                   input ! A.type_ "radio"
-                        ! A.name "options"
+                        ! A.value (stringValue txt)
                         ! A.autocomplete "off"
-                  txt
+                  string txt
 
 constructorDialog = someModal "constructor-dialog"
                    $ div ! A.class_ "modal-dialog"
