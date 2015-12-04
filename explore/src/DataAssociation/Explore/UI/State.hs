@@ -49,6 +49,8 @@ import qualified Data.Set as Set
 
 newtype Item = Item String deriving (Eq, Ord)
 instance Show Item where show (Item s) = s
+instance Read Item where readsPrec d r = [(Item x, y)]
+                                   where [(x, y)] = readsPrec d r
 
 -----------------------------------------------------------------------------
 
