@@ -1,5 +1,11 @@
+/* * Some init hooks * */
 
-/ * Socket, messages handling * /
+$(document).ready(function(){
+  initFilterConfig();
+  initConstructorDialog();
+});
+
+/* * Socket, messages handling * */
 
 wSocket.onclose = function(e) { showStatus('error', 'Connction to server closed!') };
 wSocket.onmessage = function(msg) {
@@ -62,7 +68,7 @@ var waitModal = function(on) {
   $('#wait-modal').modal(on ? 'show' : 'hide');
 };
 
-/ * Data Info * /
+/* * Data Info * */
 
 var setDataInfo = function(inf) {
     $('#data-name').text(inf['name']);
@@ -70,7 +76,7 @@ var setDataInfo = function(inf) {
     $('#data-count').text(inf['count']);
 };
 
-/ * Assoc. Rules * /
+/* * Assoc. Rules * */
 
 var mkItems = function(itemset) {
   return itemset.reduce(
@@ -108,5 +114,66 @@ var newAssocRules = function(rules) {
     _rulesSelector().append($('<group/>').append(group));
   }
 };
+
+
+
+/* * Filters Building * */
+
+var _filterPartSelected = null;
+
+var filterContains = $('<span filter-type="contains">Contains <input type="text"/></span>');
+
+var mkFilterNot = function() { return $('<span filter-type="not">Not </span>').append(filterPartSelectorSel()) };
+
+var mkFilterConstructor = function() { 
+  return filterPartSelectorSel().clone().removeAttr('id').show()
+          .append($('<script/>').append(_prepareDropdown))
+};
+
+var _prepareDropdown = '$("#create-contains").click(function(e) { createFilterPartFromSelector(e.currentTarget, filterContains.clone()) })';
+
+var filterPartSelectorSel = function() { return $('#filter-part-menu') };
+var filterConfigSel       = function() { return $('.config.filter') };
+
+
+
+var createFilterPartFromSelector = function(t, part){ $(t).parents('.create-filter-part').replaceWith(part) };
+
+var initFilterConfig = function(){
+  $('.btn-success', filterConfigSel()).click(function (){ setConstructorContentsAndShow(mkFilterConstructor()) });
+};
+
+
+/* * Constructor Dialog * */
+
+var constructorDialogSel            = function() { return $('#constructor-dialog')  };
+var constructorDialogContentsSel    = function() { return $('#constructor-dialog .contents')  };
+
+var setConstructorContentsAndShow = function(c){
+  constructorDialogContentsSel().append(c);
+  constructorDialogSel().modal('show');
+}
+
+
+var initConstructorDialog = function(){
+  constructorDialogSel().on('hidden', function () { constructorDialogContentsSel().children().remove(); });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

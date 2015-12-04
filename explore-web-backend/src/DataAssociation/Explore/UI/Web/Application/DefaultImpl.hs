@@ -93,6 +93,8 @@ instance RenderableWebPage WebApp where
                         img ! A.src "https://assets-cdn.github.com/images/modules/logos_page/GitHub-Logo.png"
             loadDataDialog
             waitModal "wait-modal"
+            constructorDialog
+            filterPartSelectorUI
 
 
 pageHead = head $ do
@@ -150,7 +152,6 @@ someModal id =  div ! A.id id
 waitModal id = someModal id . div
              $ div ! A.class_ "modal-dialog"
              $ i "" ! A.class_ "glyphicon glyphicon-refresh glyphicon-spin"
-
 
 -----------------------------------------------------------------------------
 
@@ -252,7 +253,34 @@ aprioriConfigMConfUI = AprioriConfigMConfUI $ do
 postProcessFilterBuilderUI = PostProcessFilterBuilderUI $
     div ! A.class_ "config filter col-md-4" $
         do h3 "Filters"
-           span "TODO" ! A.class_ "todo"
+           div ! A.class_ "btn-group"
+               $ do mkBootstrapButton "Add" "btn btn-success"
+                    mkBootstrapButton "Edit" "btn btn-warning"
+                    mkBootstrapButton "Delete" "btn btn-danger"
+           div "" ! A.id "filters-list"
+
+filterPartSelectorMenu = ul ! A.class_ "dropdown-menu"
+                            ! customAttribute "role" "menu"
+--                            ! customAttribute "aria-labelledby"
+--                                              "filter-part-dropdown"
+                            $
+                                do li $ a "Contains" ! A.id "create-contains"
+                                   li $ a "Not"      ! A.id "create-not"
+
+filterPartSelDropdown= div ! A.class_ "dropdown"
+                       $ do
+                            a ! A.class_ "dropdown-toggle"
+--                              ! A.id "filter-part-dropdown"
+                              ! customAttribute "role" "button"
+                              ! customAttribute "data-toggle" "dropdown"
+                              ! customAttribute "data-target" "#"
+                              $ i "" ! A.class_ "glyphicon glyphicon-plus"
+                            filterPartSelectorMenu
+
+filterPartSelectorUI = div ! A.id "filter-part-menu"
+                           ! A.class_ "create-filter-part"
+                           ! A.hidden "true"
+                           $ filterPartSelDropdown
 
 postProcessSortBuilderUI = PostProcessSortBuilderUI $
     span "TODO" ! A.class_ "todo"
@@ -269,7 +297,16 @@ showProcessedDataUI = ShowProcessedDataUI{
 
 -----------------------------------------------------------------------------
 
-
+constructorDialog = someModal "constructor-dialog"
+                   $ div ! A.class_ "modal-dialog"
+                   $ div ! A.class_ "modal-content"
+                   $ do div ! A.class_ "modal-header"
+                            $ mkBootstrapCloseModalButton "×" "close"
+                        div "" ! A.class_ "contents"
+                        div ! A.class_ "modal-footer" $ do
+                            mkBootstrapCloseModalButton "Apply" "btn btn-primary"
+                                ! A.class_ "submit"
+                            mkBootstrapCloseModalButton "Cancel" "btn btn-inverse"
 
 
 

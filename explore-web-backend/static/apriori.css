@@ -184,7 +184,25 @@ footer {
   font-weight: bold;
   /* font-style: italic; */
 }
-/*
-body > .container {
-  height: 100%;
-}*/
+
+
+
+
+
+
+
+
+#constructor-dialog .contents{
+  text-align: center;
+  min-height: 100px; 
+}
+
+.create-filter-part{
+  height: 40px;
+  width: 40px;
+  border: solid 1px lightblue;
+  /* vertical-align: middle; */
+  margin-left: 48%;
+  /* margin-top: 50%; */
+  padding: 9px;
+}
