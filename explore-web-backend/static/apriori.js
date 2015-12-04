@@ -91,7 +91,7 @@ var mkAssocRule = function(rule) {
   return $(assocrule)
 };
 
-var _rulesSelector = function() { return $('#rules .container') };
+var _rulesSelector = function() { return $('#rules .rules-groups') };
 
 var newAssocRules = function(rules) {
   for (i in rules) {
