@@ -29,6 +29,8 @@ module DataAssociation.Explore.UI.State (
 , getCurrentRules
 , setCurrentRules
 
+, Item(..)
+
 ) where
 
 --import Control.Concurrent.MVar
@@ -45,6 +47,11 @@ import qualified Data.Set as Set
 
 -----------------------------------------------------------------------------
 
+newtype Item = Item String deriving (Eq, Ord)
+instance Show Item where show (Item s) = s
+
+-----------------------------------------------------------------------------
+
 data ApplicationState cache conf = ApplicationState{
     cacheState                  :: IORef cache
   , rawDataState                :: IORef RawWekaData
@@ -52,7 +59,7 @@ data ApplicationState cache conf = ApplicationState{
   , postProcessFilterState      :: IORef (Set RuleFilter)
   , postProcessSortState        :: IORef [RuleOrder]
   , postProcessGroupState       :: IORef (Maybe RuleGroup)
-  , currentRules                :: IORef [[AssocRule Set String]]
+  , currentRules                :: IORef [[AssocRule Set Item]]
 }
 
 data InitialState cache wData conf = InitialState cache wData conf

@@ -58,6 +58,8 @@ module DataAssociation.Explore.UI.Web.Application (
 , AprioriConfigMSupUI(..)
 , AprioriConfigMConfUI(..)
 
+, Item(..)
+
 ) where
 
 import DataAssociation
@@ -83,6 +85,7 @@ import Text.Read ( readMaybe )
 import Text.Blaze.Html5 (Html)
 import Text.JSON
 
+
 -----------------------------------------------------------------------------
 
 data WebApp = WebApp RawDataTextAreaDialog
@@ -90,7 +93,7 @@ data WebApp = WebApp RawDataTextAreaDialog
                      PostProcessFilterBuilderUI
                      PostProcessSortBuilderUI
                      PostProcessGroupBuilderUI
-                    (ShowProcessedDataUI Set String)
+                    (ShowProcessedDataUI Set Item)
                      StatusList
 
 instance ApplicationUITypes WebApp where
@@ -100,7 +103,7 @@ instance ApplicationUITypes WebApp where
     type PostFilterAppUI = PostProcessFilterBuilderUI
     type PostSortAppUI   = PostProcessSortBuilderUI
     type PostGroupAppUI  = PostProcessGroupBuilderUI
-    type ShowAppUI       = ShowProcessedDataUI Set String
+    type ShowAppUI       = ShowProcessedDataUI Set Item
 
     type MessagingContext = Message2UI
 
@@ -116,9 +119,9 @@ instance ApplicationUI WebApp where
 
 instance ReactiveWebElemSelectorParam WebApp where elemNameParam _ = "elem-id"
 instance ( Show WekaDataAttribute
-         , WekaEntryToItemset Set String
-         , AssociationRulesGenerator Set String) =>
-    ReactiveWebElemSelector WebApp (AprioriWebAppState Set String) where
+         , WekaEntryToItemset Set Item
+         , AssociationRulesGenerator Set Item) =>
+    ReactiveWebElemSelector WebApp (AprioriWebAppState Set Item) where
     reactiveWebElemByName a _ name =
         case name of "raw-data"       -> SomeReactiveWebElem $ uiRawData a
                      "min-support"    -> SomeReactiveWebElem . aprioriConfigMSup  . uiConfig $ a
@@ -305,8 +308,8 @@ instance ShowUI ShowProcessedDataUI where sendDataToShow = sendDataToUI
 
 instance ReactiveWebElemConf (ShowProcessedDataUI set it) where reqParam = const ""
 
-instance (AssociationRulesGenerator Set String) =>
-    ReactiveWebElem (ShowProcessedDataUI Set String) (AprioriWebAppState Set String) where
+instance (AssociationRulesGenerator Set Item) =>
+    ReactiveWebElem (ShowProcessedDataUI Set Item) (AprioriWebAppState Set Item) where
         type ReactiveWebElemArg = [(String, JSValue)]
         reqParse u jobj reporter state = do
             (cache, transactions) <- getCacheState state
