@@ -56,8 +56,8 @@ data ApplicationState cache conf = ApplicationState{
     cacheState                  :: IORef cache
   , rawDataState                :: IORef RawWekaData
   , programConfigState          :: IORef conf
-  , postProcessFilterState      :: IORef (Set RuleFilter)
-  , postProcessSortState        :: IORef [RuleOrder]
+  , postProcessFilterState      :: IORef (Set (RuleFilter Item))
+  , postProcessSortState        :: IORef [RuleOrder Item]
   , postProcessGroupState       :: IORef (Maybe RuleGroup)
   , currentRules                :: IORef [[AssocRule Set Item]]
 }
@@ -82,11 +82,11 @@ instance RawDataInnerRepr (ApplicationState cache conf) where
     getRawData = readIORef . rawDataState
     setRawData = writeIORef . rawDataState
 
-instance PostProcessInnerRepr (ApplicationState cache conf) RuleFilter where
+instance PostProcessInnerRepr (ApplicationState cache conf) (RuleFilter Item) where
     getPostProcess = fmap Set.toList . readIORef . postProcessFilterState
     setPostProcess s = writeIORef (postProcessFilterState s) . Set.fromList
 
-instance PostProcessInnerRepr (ApplicationState cache conf) RuleOrder where
+instance PostProcessInnerRepr (ApplicationState cache conf) (RuleOrder Item) where
     getPostProcess = readIORef . postProcessSortState
     setPostProcess = writeIORef . postProcessSortState
 
