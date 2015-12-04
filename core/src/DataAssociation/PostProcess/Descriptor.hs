@@ -23,42 +23,52 @@ module DataAssociation.PostProcess.Descriptor (
 
 ) where
 
-
 import Data.Typeable
 
 ---------------------------------------------------------------------------
 
-
-class (Show d, Typeable d) => PostProcessDescription d
+class (Show d, Read d, Typeable d, Ord d) => PostProcessDescription d
 
 data PostProcessDescriptor = forall d . PostProcessDescription d => PostProcessDescriptor d
 
-
 ---------------------------------------------------------------------------
 
 
-data RuleFilter = RuleFilter RulePart
-                             ItemsetFilter
-                deriving (Show, Typeable, Eq, Ord)
-instance PostProcessDescription RuleFilter
+data RuleFilter it = RuleFilter RulePart
+                               (ItemsetFilter it)
+                   deriving (Show, Read, Typeable, Eq, Ord)
 
-data RulePart = RuleFrom
-              | RuleFollows
-              deriving (Show, Typeable, Eq, Ord)
---instance PostProcessDescription RulePart
+instance (Typeable it, Show it, Read it, Ord it) => PostProcessDescription (RuleFilter it)
 
-data ItemsetFilter = TODO
-                   deriving (Show, Typeable, Eq, Ord)
---instance PostProcessDescription ItemsetFilter
+data RulePart = Left
+              | Right
+              deriving (Show, Read, Typeable, Eq, Ord)
 
-
----------------------------------------------------------------------------
-
-data RuleOrder = RuleOrderTODO
-
+data ItemsetFilter it = Contains it
+                      | Not (ItemsetFilter it)
+                      | And (ItemsetFilter it) (ItemsetFilter it)
+                      | Or  (ItemsetFilter it) (ItemsetFilter it)
+                      deriving (Show, Read, Typeable, Eq, Ord)
 
 ---------------------------------------------------------------------------
 
-type RuleGroup = RulePart
+data SortDir = Ascending | Descending deriving (Show, Read, Typeable, Eq, Ord)
+
+data SortBy it = Support
+               | Confidence
+               | Item RulePart [it]
+               deriving (Show, Read, Typeable, Eq, Ord)
+
+
+data RuleOrder it  = Sort SortDir (SortBy it)
+                   deriving (Show, Read, Typeable, Eq, Ord)
+
+instance (Typeable it, Show it, Read it, Ord it) => PostProcessDescription (RuleOrder it)
+
+---------------------------------------------------------------------------
+
+newtype RuleGroup = RuleGroup RulePart
+                  deriving (Show, Read, Typeable, Eq, Ord)
+instance PostProcessDescription RuleGroup
 
 
