@@ -25,6 +25,9 @@ module DataAssociation.PostProcess (
 
 , RuleGroup
 
+
+, ItemByAttribute(..)
+
 ) where
 
 import DataAssociation
@@ -54,12 +57,15 @@ data PostProcessDescriptor set it = forall d . PostProcessDescription d set it =
 
 ---------------------------------------------------------------------------
 
+class (Itemset set it) =>
+    ItemByAttribute set it where containsAnyWithAttr :: set it -> String -> Bool
+
 
 data RuleFilter it = RuleFilter RulePart
                                (ItemsetFilter it)
                    deriving (Show, Read, Typeable, Eq, Ord)
 
-instance (Typeable it, Show it, Read it, Ord it, Itemset set it) =>
+instance ( Typeable it, Show it, Read it, Ord it, ItemByAttribute set it ) =>
     PostProcessDescription (RuleFilter it) set it where
 
         postProcessFromDescriptor (RuleFilter Left f)  = ppFilterFromDescr f ruleFrom
@@ -71,13 +77,15 @@ data RulePart = Left
               | Right
               deriving (Show, Read, Typeable, Eq, Ord)
 
-itemsetFilter :: (Itemset set it) => ItemsetFilter it -> set it -> Bool
+itemsetFilter :: (ItemByAttribute set it) => ItemsetFilter it -> set it -> Bool
 itemsetFilter (Contains x) = (`containsItem` x)
 itemsetFilter (Not x)      = not . itemsetFilter x
 itemsetFilter (And x y)    = \s -> itemsetFilter x s && itemsetFilter y s
 itemsetFilter (Or x y)     = \s -> itemsetFilter x s || itemsetFilter y s
+itemsetFilter (Has attr)   = flip containsAnyWithAttr attr
 
 data ItemsetFilter it = Contains it
+                      | Has String -- ^ Has Attribute
                       | Not (ItemsetFilter it)
                       | And (ItemsetFilter it) (ItemsetFilter it)
                       | Or  (ItemsetFilter it) (ItemsetFilter it)
@@ -87,17 +95,17 @@ data ItemsetFilter it = Contains it
 
 data SortDir = Ascending | Descending deriving (Show, Read, Typeable, Eq, Ord)
 
-data SortBy it = Support
-               | Confidence
-               | Item RulePart [it]
+data SortBy = Support
+            | Confidence
+            | Attribute RulePart [String]
+            deriving (Show, Read, Typeable, Eq, Ord)
+
+
+data RuleOrder = Sort SortDir SortBy
                deriving (Show, Read, Typeable, Eq, Ord)
 
-
-data RuleOrder it  = Sort SortDir (SortBy it)
-                   deriving (Show, Read, Typeable, Eq, Ord)
-
 instance (Typeable it, Show it, Read it, Ord it) =>
-    PostProcessDescription (RuleOrder it) set it where
+    PostProcessDescription RuleOrder set it where
         postProcessFromDescriptor (Sort Ascending  sortKeys) = undefined -- TODO
         postProcessFromDescriptor (Sort Descending sortKeys) = undefined -- TODO
 
