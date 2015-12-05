@@ -174,11 +174,18 @@ loadDataDialog = someModal "upload-data-dialog"
                             p "Enter the data in ARFF format:"
                             textarea "" ! A.id "upload-data-dialog-text"
                         div ! A.class_ "modal-footer" $ do
+                            label $ do "Build cache immediately? "
+                                       input ! A.type_ "checkbox"
+                                             ! A.id "build-cache"
+                            script "$('#build-cache').bootstrapSwitch(\
+                                   \{onText: 'Yes', offText: 'No'});" -- size: 'small',
                             mkBootstrapCloseModalButton "Upload" "btn btn-primary"
                                 ! A.onclick (stringValue . sendMessageObjJS $
                                              mkServerMessage "raw-data"
                                                              "raw-data"
                                                              "$('#upload-data-dialog-text').val()"
+                                             ++ [("build-cache"
+                                                 , "$('#build-cache').bootstrapSwitch('state')")]
                                             )
                             mkBootstrapCloseModalButton "Cancel" "btn btn-inverse"
 

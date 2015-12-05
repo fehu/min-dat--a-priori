@@ -11,23 +11,29 @@ wSocket.onclose = function(e) { showStatus('error', 'Connction to server closed!
 wSocket.onmessage = function(msg) {
     console.log('received message: '.concat(msg.data));
     obj = JSON.parse(msg.data);
-    waitModal(false)
-
+    
     switch(obj['type']) {
       case 'error': 
-          processStatusMsg(obj, 'error')
+          processStatusMsg(obj, 'error');
+          waitModal(false);
           break;
       case 'status':
-          processStatusMsg(obj, 'ok')
+          processStatusMsg(obj, 'ok');
+          waitModal(false);
           break;
       case 'data-info':
           setDataInfo(obj);
           break;
       case 'rules':
           newAssocRules(obj['rules']);
+          waitModal(false);
           break;
       case 'post-filter':
           handlePostFilterChange(obj);
+          waitModal(false);
+          break;
+      case 'done':
+          waitModal(false);
           break;
      }
     };

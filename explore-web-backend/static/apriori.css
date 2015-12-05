@@ -5,6 +5,14 @@
   height: 400px;
 }
 
+#upload-data-dialog .modal-footer .bootstrap-switch{
+  height: 35px;
+}
+
+#upload-data-dialog .modal-footer label{
+  float: left;
+}
+
 
 body > header {
   background-color:black;
@@ -46,7 +54,6 @@ input:required:invalid {
   text-align: center;
   height: 100%;
 }
-
 
 
 /* From http://chadkuehn.com/animated-font-spinners/ */

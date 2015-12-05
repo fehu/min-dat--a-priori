@@ -148,11 +148,6 @@ type AprioriWebAppCache set it = (AprioriCache set it, [set it])
 type AprioriWebAppState set it = ApplicationState (AprioriWebAppCache set it)
                                                   (MinSupport, MinConfidence)
 
---uiReactiveWebElems :: WebApp -> [SomeReactiveWebElem (AprioriWebAppState cache)]
---uiReactiveWebElems a = [ SomeReactiveWebElem $ uiRawData a
---                       , SomeReactiveWebElem $ uiConfig a
---                       ]
-
 -----------------------------------------------------------------------------
 
 class HtmlElem e where
@@ -218,26 +213,33 @@ instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
     type ReactiveWebElemArg = [(String, JSValue)]
 
     reqParse u jobj reporter state = do
+
         let rawData = wekaDataFromLines lines
+        setRawData state rawData
         msg2UI reporter $ dataUpdateMsg rawData
 
         let sparse   = wekaData2Sparse rawData
         let itemsets = map wekaEntryToItemset sparse
 
-        putStrLn $ "itemsets: " ++ show itemsets
-
-        let cache = mkAprioriCache itemsets
-
-        setRawData state rawData
         putStrLn $ "Read " ++ show (length itemsets) ++ " itemsets."
+--        putStrLn $ "itemsets: " ++ show itemsets
 
-        setCacheState state (cache, itemsets)
-        putStrLn $ "setCacheState " ++ show cache
-        let AprioriCache c = cache
-        let cacheMsg = "Created cache with " ++ show (Map.size c) ++ " itemsets."
-        putStrLn cacheMsg
+        let buildCacheNow = case lookup "build-cache" jobj of Just (JSBool b) -> b
+                                                              _               -> False
+        if buildCacheNow
+            then do
+                let cache = mkAprioriCache itemsets
 
-        msg2UI reporter $ statusUpdMsg cacheMsg
+                setCacheState state (cache, itemsets)
+                putStrLn $ "setCacheState " ++ show cache
+                let AprioriCache c _ = cache
+                let cacheMsg = "Created cache with " ++ show (Map.size c) ++ " itemsets."
+                putStrLn cacheMsg
+
+                msg2UI reporter $ statusUpdMsg cacheMsg
+
+            else do setCacheState state (emptyAprioriCache, itemsets)
+                    msg2UI reporter DoneMsg
 
 
         where Just (JSString rawData) = lookup "raw-data" jobj
@@ -401,16 +403,26 @@ instance ( AssociationRulesGenerator Set Item, Show WekaVal ) =>
         reqParse u jobj reporter state = do
             (cache, transactions) <- getCacheState state
             (minsup, minconf) <- getProgramConfigState state
-            filterDescrs <- getPostProcess state :: IO [PostFilterEntry]
-            let filters = map (postProcessFromDescriptor . snd) . filter postFilterEnabled
-                        $ filterDescrs
 
-            let largeSets = aprioriCached cache minsup
+            let (newCache, largeSets) = aprioriCached cache transactions minsup
+            setCacheState state (newCache, transactions)
+
             let rules  = generateAssociationRules minconf transactions largeSets
-            let filtered = foldr postProcess rules filters
 
-            setCurrentRules state [filtered]   -- TODO : more postprocess
-            sendDataToShow u reporter [filtered]
+            filtered <- applyFilters state rules -- TODO : more postprocess
+
+            rulesUpdated u reporter state [filtered]
+
+
+
+applyFilters state rules = do
+    filterDescrs <- getPostProcess state :: IO [PostFilterEntry]
+    let filters = map (postProcessFromDescriptor . snd) . filter postFilterEnabled
+                $ filterDescrs
+    return $ foldr postProcess rules filters
+
+rulesUpdated u reporter state grules = do setCurrentRules state grules
+                                          sendDataToShow u reporter grules
 
 -----------------------------------------------------------------------------
 

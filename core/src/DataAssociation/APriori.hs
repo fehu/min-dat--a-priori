@@ -27,21 +27,29 @@ import DataAssociation.Abstract
 
 -----------------------------------------------------------------------------
 
-newtype AprioriCache set it = AprioriCache (Map (set it) Float) deriving (Show, Read)
+data AprioriCache set it = AprioriCache (Map (set it) Float) Float deriving (Show, Read)
+
+emptyAprioriCache :: AprioriCache set it
+emptyAprioriCache = AprioriCache Map.empty 1
 
 -- | select Large itemsets from given cache
 aprioriCached :: (Ord (set it), Ord it, Itemset set it) =>
-    AprioriCache set it
+       AprioriCache set it
+    -> [set it]             -- ^ transactions
     -> MinSupport
-    -> Map (set it) Float   -- ^ __large__ itemsets
+    -> (AprioriCache set it, Map (set it) Float)   -- ^ cache and __large__ itemsets
 
-aprioriCached (AprioriCache cache) (MinSupport minsup) = Map.filter (>= minsup) cache
+aprioriCached c@(AprioriCache cache cMinsup) transactions ms@(MinSupport minsup) =
+    if minsup < cMinsup then let result = fst $ runApriori ms transactions
+                             in (AprioriCache (Map.union cache result) minsup, result)
+                        else (c, Map.filter (>= minsup) cache)
 
+-- | This might be dangerous, because (MinSupport 0) is used.
 mkAprioriCache :: (Ord (set it), Ord it, Itemset set it) =>
                   [set it]              -- ^ /transactions/
                -> AprioriCache set it   -- ^ cache
 
-mkAprioriCache = AprioriCache . fst .runApriori (MinSupport 0)
+mkAprioriCache = flip AprioriCache 0 . fst .runApriori (MinSupport 0)
 
 -----------------------------------------------------------------------------
 -- | The __APriori__ instance. Defined in "DataAssociation.APriori". Based on 'apriori'.

@@ -16,6 +16,8 @@ module DataAssociation.APriori.Public (
   AprioriCache(..)
 
 , mkAprioriCache
+, emptyAprioriCache
+
 , aprioriCached
 
 ) where
