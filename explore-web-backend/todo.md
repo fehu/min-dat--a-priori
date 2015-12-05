@@ -10,6 +10,9 @@ TODO
 - [x] Provide checkboxes on/off for filters.
 - [x] Guard on/off state on server.
 
+- [ ] Filters Contains attr value / attr name.
+- [ ] Autocomplete in filters.
+
 - [ ] Provide small delete buttons for filters;
 - [ ] Remove Edit and Delete buttons in filters;
 

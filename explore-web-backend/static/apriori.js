@@ -127,6 +127,17 @@ var newAssocRules = function(rules) {
 
 
 
+
+
+
+var _random = function() { return (Math.random()).toString().substr(2) };
+
+
+
+
+
+
+
 /* * Filters Building * */
 
 var _filterPartSelected = null;
@@ -135,17 +146,25 @@ var filterContains = $('<cpart type="Contains">Contains <input type="text"/></cp
 
 var mkFilterNot = function() { return $('<cpart type="Not">Not </cpart>').append(mkFilterConstructor()) };
 
+
+var mkFilter2Parts = function(name) { 
+  return $('<cpart type="' + name + '"/>').append(mkFilterConstructor(), ' ' + name + ' ' , mkFilterConstructor()) 
+}; 
+
 var mkFilterConstructor = function() { 
-  return _filterPartSelectorSel().clone().removeAttr('id').show()
+  id = _random();
+  return _filterPartSelectorSel().clone().attr('id', id).show()
           .append(
             $('<script/>')
-              .append(prepareDropdownJS('#create-contains', 'filterContains'))
-              .append(prepareDropdownJS('#create-not', 'mkFilterNot()'))
+              .append(prepareDropdownJS(id, 'create-contains', 'filterContains'))
+              .append(prepareDropdownJS(id, 'create-not', 'mkFilterNot()'))
+              .append(prepareDropdownJS(id, 'create-and', 'mkFilter2Parts("And")'))
+              .append(prepareDropdownJS(id, 'create-or',  'mkFilter2Parts("Or")'))
           )
 };
 
-var prepareDropdownJS = function(trigger, elem){
-  return '$("' + trigger + '").click(function(e) { createFilterPartFromSelector(e.currentTarget, ' + elem + '.clone()) });'
+var prepareDropdownJS = function(id, trigger, elem){
+  return '$("#' + id + ' .' + trigger + '").click(function(e) { createFilterPartFromSelector(e.currentTarget, ' + elem + '.clone()) });'
 };
 
 
@@ -169,7 +188,7 @@ var handlePostFilterChange = function(msg){
   id = msg['filter-id'];
   switch (msg['post-filter']){
     case 'new':
-        filtersListSel().prepend(mkPostFilterDescription(id, msg['filter-str']));
+        filtersListSel().append(mkPostFilterDescription(id, msg['filter-str']));
         break;
     case 'remove':
         $(id).remove();
@@ -261,7 +280,7 @@ var collectConstructed = function(){
           break;
         case 'And':
         case 'Or':
-          // TODO
+          res[tpe] = f(part);
           break;
       }
       return res

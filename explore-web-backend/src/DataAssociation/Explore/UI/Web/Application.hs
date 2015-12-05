@@ -310,7 +310,7 @@ addNewFilter u jobj reporter state = do
             ( ( PostFilterId filterId, PostFilterState True )
             , descriptor :: RuleFilter Item)
          ]
-       msg2UI reporter $ NewPostFilter filterId descriptorStr
+       msg2UI reporter $ NewPostFilter filterId (drop 11 descriptorStr)
     where descriptorStr = fromMaybe (error "failed to read filter " ++ show jobj)
                                     mbDescriptorStr
           mbDescriptorStr = do

@@ -268,8 +268,10 @@ filterPartSelectorMenu = ul ! A.class_ "dropdown-menu"
 --                            ! customAttribute "aria-labelledby"
 --                                              "filter-part-dropdown"
                             $
-                                do li $ a "Contains" ! A.id "create-contains"
-                                   li $ a "Not"      ! A.id "create-not"
+                                do li $ a "Contains" ! A.class_ "create-contains"
+                                   li $ a "Not"      ! A.class_ "create-not"
+                                   li $ a "And"      ! A.class_ "create-and"
+                                   li $ a "Or"       ! A.class_ "create-or"
 
 filterPartSelDropdown= div ! A.class_ "dropdown"
                        $ do
