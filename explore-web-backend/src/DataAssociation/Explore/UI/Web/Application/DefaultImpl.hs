@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, FlexibleContexts #-}
 
 -----------------------------------------------------------------------------
 --
@@ -36,6 +36,7 @@ import DataAssociation.Explore.UI.Web.Application.Message
 import DataAssociation.Explore.UI.Web.Render
 import DataAssociation.Explore.UI.Web.RulesTransfer
 import DataAssociation.Itemset.SetImpl
+import WekaData
 
 import Data.IORef
 import qualified Data.Set as Set
@@ -50,6 +51,7 @@ import qualified Network.WebSockets as WS
 
 -----------------------------------------------------------------------------
 
+webApp :: (Show WekaVal) => WebApp
 webApp = WebApp rawDataTextAreaDialog
                 aprioriConfigUI
                 postProcessFilterBuilderUI
@@ -258,9 +260,7 @@ postProcessFilterBuilderUI = PostProcessFilterBuilderUI $
     div ! A.class_ "config filter col-md-4" $
         do h3 "Filters"
            div ! A.class_ "btn-group"
-               $ do mkBootstrapButton "Add" "btn btn-success"
-                    mkBootstrapButton "Edit" "btn btn-warning"
-                    mkBootstrapButton "Delete" "btn btn-danger"
+               $ mkBootstrapButton "Add" "btn btn-success"
            div "" ! A.id "filters-list"
 
 filterPartSelectorMenu = ul ! A.class_ "dropdown-menu"
@@ -268,10 +268,11 @@ filterPartSelectorMenu = ul ! A.class_ "dropdown-menu"
 --                            ! customAttribute "aria-labelledby"
 --                                              "filter-part-dropdown"
                             $
-                                do li $ a "Contains" ! A.class_ "create-contains"
-                                   li $ a "Not"      ! A.class_ "create-not"
-                                   li $ a "And"      ! A.class_ "create-and"
-                                   li $ a "Or"       ! A.class_ "create-or"
+                                do li $ a "Contains"        ! A.class_ "create-contains"
+                                   li $ a "Has Attribute"   ! A.class_ "create-has"
+                                   li $ a "Not"             ! A.class_ "create-not"
+                                   li $ a "And"             ! A.class_ "create-and"
+                                   li $ a "Or"              ! A.class_ "create-or"
 
 filterPartSelDropdown= div ! A.class_ "dropdown"
                        $ do
@@ -296,6 +297,7 @@ postProcessGroupBuilderUI = PostProcessGroupBuilderUI $
 
 -----------------------------------------------------------------------------
 
+showProcessedDataUI :: (Show WekaVal) => ShowProcessedDataUI Set Item
 showProcessedDataUI = ShowProcessedDataUI{
     sendDataToUI = \r -> msg2UI r . rulesUpdateMsg
   , showDataHtml = div "" ! A.class_ "rules-groups"

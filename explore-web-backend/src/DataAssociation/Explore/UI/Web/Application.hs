@@ -1,9 +1,10 @@
 {-# LANGUAGE TypeFamilies
-           , FlexibleInstances
-           , ExistentialQuantification
-           , OverloadedStrings
-           , FlexibleContexts
-         #-}
+            , FlexibleInstances
+            , ExistentialQuantification
+            , OverloadedStrings
+            , FlexibleContexts
+            , UndecidableInstances
+          #-}
 
 -----------------------------------------------------------------------------
 --
@@ -91,6 +92,11 @@ import Text.JSON
 
 -----------------------------------------------------------------------------
 
+instance (Itemset Set Item) => ItemByAttribute Set Item where
+    containsAnyWithAttr set name = set `containsItem` ItemByAttrExtractor name
+
+-----------------------------------------------------------------------------
+
 data WebApp = WebApp RawDataTextAreaDialog
                      AprioriConfigUI
                      PostProcessFilterBuilderUI
@@ -120,8 +126,14 @@ instance ApplicationUI WebApp where
     uiShow       (WebApp _ _ _ _ _ u _) = u
     uiStatus     (WebApp _ _ _ _ _ _ u) = u
 
+
+
+
+--instance WithContext RawWekaData where currentContext
+
+
 instance ReactiveWebElemSelectorParam WebApp where elemNameParam _ = "elem-id"
-instance ( Show WekaDataAttribute
+instance ( Show WekaDataAttribute, Show WekaVal
          , WekaEntryToItemset Set Item
          , AssociationRulesGenerator Set Item) =>
     ReactiveWebElemSelector WebApp (AprioriWebAppState Set Item) where
@@ -212,7 +224,7 @@ instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
         let sparse   = wekaData2Sparse rawData
         let itemsets = map wekaEntryToItemset sparse
 
-        putStrLn "itemsets"
+        putStrLn $ "itemsets: " ++ show itemsets
 
         let cache = mkAprioriCache itemsets
 
@@ -383,7 +395,7 @@ instance ShowUI ShowProcessedDataUI where sendDataToShow = sendDataToUI
 
 instance ReactiveWebElemConf (ShowProcessedDataUI set it) where reqParam = const ""
 
-instance ( AssociationRulesGenerator Set Item ) =>
+instance ( AssociationRulesGenerator Set Item, Show WekaVal ) =>
     ReactiveWebElem (ShowProcessedDataUI Set Item) (AprioriWebAppState Set Item) where
         type ReactiveWebElemArg = [(String, JSValue)]
         reqParse u jobj reporter state = do

@@ -143,6 +143,7 @@ var _random = function() { return (Math.random()).toString().substr(2) };
 var _filterPartSelected = null;
 
 var filterContains = $('<cpart type="Contains">Contains <input type="text"/></cpart>');
+var filterHas      = $('<cpart type="Has">Has Attribute <input type="text"/></cpart>');
 
 var mkFilterNot = function() { return $('<cpart type="Not">Not </cpart>').append(mkFilterConstructor()) };
 
@@ -157,6 +158,7 @@ var mkFilterConstructor = function() {
           .append(
             $('<script/>')
               .append(prepareDropdownJS(id, 'create-contains', 'filterContains'))
+              .append(prepareDropdownJS(id, 'create-has', 'filterHas'))
               .append(prepareDropdownJS(id, 'create-not', 'mkFilterNot()'))
               .append(prepareDropdownJS(id, 'create-and', 'mkFilter2Parts("And")'))
               .append(prepareDropdownJS(id, 'create-or',  'mkFilter2Parts("Or")'))
@@ -272,7 +274,8 @@ var collectConstructed = function(){
       tpe = part.attributes['type'].value;
       console.log('tpe = ' + tpe);
       switch (tpe){
-        case 'Contains': 
+        case 'Contains':
+        case 'Has':
           res[tpe] = $('input', part).val();
           break;
         case 'Not':

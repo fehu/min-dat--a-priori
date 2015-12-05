@@ -1,5 +1,5 @@
 name:               DataAssociation-Explore
-version:            0.0.0.1
+version:            0.0.1.0
 cabal-version:      >=1.10
 build-type:         Simple
 license:            MIT
@@ -14,7 +14,7 @@ extra-source-files: LICENCE
 library
     build-depends:   base >=4.6
                    , DataAssociation -any
-                   , WekaData >= 0.2.0.1
+                   , WekaData >= 0.2.0.2
                    , containers >= 0.5
     hs-source-dirs:  src
     exposed-modules: DataAssociation.Explore.Program

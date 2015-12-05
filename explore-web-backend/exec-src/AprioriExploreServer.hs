@@ -41,9 +41,9 @@ import qualified Network.WebSockets as WS
 
 instance WekaEntryToItemset Set Item where
     wekaEntryToItemset (WEntry vset) = Set.map f vset
-        where f (WVal (WekaAttrNom a [_]) _) = Item a
-              f (WVal (WekaAttrNom _  _ ) v) = Item v
-              f (WVal (WekaAttrNum _)     _) = error "The data is expected to be nominal"
+        where f (WVal   (WekaAttrNom a [_]) _) = SingletonDomainItem a
+              f (WVal a@(WekaAttrNom _  _ ) v) = Item v a
+              f (WVal   (WekaAttrNum _)     _) = error "The data is expected to be nominal"
 
 -----------------------------------------------------------------------------
 

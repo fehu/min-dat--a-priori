@@ -1,4 +1,9 @@
-{-# LANGUAGE TypeFamilies, FlexibleInstances, DeriveDataTypeable #-}
+{-# LANGUAGE TypeFamilies
+           , FlexibleInstances
+           , DeriveDataTypeable
+           , FlexibleContexts
+           , UndecidableInstances
+       #-}
 
 -----------------------------------------------------------------------------
 --
@@ -40,7 +45,7 @@ module DataAssociation.Explore.UI.State (
 
 ) where
 
-import DataAssociation
+import DataAssociation.Definitions
 import DataAssociation.PostProcess
 import DataAssociation.Explore.UI.Application
 import WekaData
@@ -53,10 +58,60 @@ import qualified Data.Set as Set
 
 -----------------------------------------------------------------------------
 
-newtype Item = Item String deriving (Eq, Ord, Typeable)
-instance Show Item where show (Item s) = s
-instance Read Item where readsPrec d r = [(Item x, y)]
+data Item = ReadItem String
+          | Item String WekaDataAttribute
+          | SingletonDomainItem String
+          | ItemByAttrExtractor String
+          deriving Typeable
+
+instance (Show WekaVal) => Show Item where show (ReadItem s) = s
+                                           show (Item v _)   = v
+                                           show (SingletonDomainItem s) = s
+instance Read Item where readsPrec d r = [(ReadItem x, y)]
                                    where [(x, y)] = readsPrec d r
+
+instance Eq Item where
+
+    (ReadItem r) == (Item v _)              = r == v
+    (ReadItem r) == (SingletonDomainItem v) = r == v
+
+    t@(Item _ _)              == r@(ReadItem _) = r == t
+    t@(SingletonDomainItem _) == r@(ReadItem _) = r == t
+
+    (ItemByAttrExtractor e) == (Item _ a)              = e == wekaAttributeName a
+    (ItemByAttrExtractor e) == (SingletonDomainItem v) = e == v
+
+    t@(Item _ _)              == e@(ItemByAttrExtractor _) = e == t
+    t@(SingletonDomainItem _) == e@(ItemByAttrExtractor _) = e == t
+
+    (Item x _)              == (Item y _)              = x == y
+    (SingletonDomainItem x) == (SingletonDomainItem y) = x == y
+
+    (Item x _)              == (SingletonDomainItem y) = x == y
+    (SingletonDomainItem x) == (Item y _)              = x == y
+
+    _ == _ = False
+
+instance Ord Item where
+
+    (ReadItem r) `compare` (Item v _)              = r `compare` v
+    (ReadItem r) `compare` (SingletonDomainItem v) = r `compare` v
+
+    t@(Item _ _)              `compare` r@(ReadItem _) = r `compare` t
+    t@(SingletonDomainItem _) `compare` r@(ReadItem _) = r `compare` t
+
+    (ItemByAttrExtractor e) `compare` (Item _ a)              = e `compare` wekaAttributeName a
+    (ItemByAttrExtractor e) `compare` (SingletonDomainItem v) = e `compare` v
+
+    t@(Item _ _)              `compare` e@(ItemByAttrExtractor _) = e `compare` t
+    t@(SingletonDomainItem _) `compare` e@(ItemByAttrExtractor _) = e `compare` t
+
+    (Item x _)              `compare` (Item y _)              = x `compare` y
+    (SingletonDomainItem x) `compare` (SingletonDomainItem y) = x `compare` y
+
+    (Item x _)              `compare` (SingletonDomainItem y) = x `compare` y
+    (SingletonDomainItem x) `compare` (Item y _)              = x `compare` y
+
 
 -----------------------------------------------------------------------------
 
@@ -76,7 +131,7 @@ data ApplicationState cache conf = ApplicationState{
   , rawDataState                :: IORef RawWekaData
   , programConfigState          :: IORef conf
   , postProcessFilterState      :: IORef (Set PostFilterEntry)
-  , postProcessSortState        :: IORef [RuleOrder Item]
+  , postProcessSortState        :: IORef [RuleOrder]
   , postProcessGroupState       :: IORef (Maybe RuleGroup)
   , currentRules                :: IORef [[AssocRule Set Item]]
 }
@@ -105,7 +160,7 @@ instance PostProcessInnerRepr (ApplicationState cache conf) PostFilterEntry wher
     getPostProcess = fmap Set.toList . readIORef . postProcessFilterState
     setPostProcess s = writeIORef (postProcessFilterState s) . Set.fromList
 
-instance PostProcessInnerRepr (ApplicationState cache conf) (RuleOrder Item) where
+instance PostProcessInnerRepr (ApplicationState cache conf) (RuleOrder) where
     getPostProcess = readIORef . postProcessSortState
     setPostProcess = writeIORef . postProcessSortState
 
