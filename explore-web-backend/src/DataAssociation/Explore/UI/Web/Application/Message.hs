@@ -132,22 +132,31 @@ rulesUpdateMsg = WebAppDataRulesMsg
 
 -----------------------------------------------------------------------------
 
-data WebAppPostFilterCtrlMsg = NewPostFilter String String
-                             | RmPostFilter  String
+data WebAppPostFilterCtrlMsg = NewPostFilter      String String
+                             | RmPostFilter       String
+                             | SetPostFilterState String Bool
 
 instance WebAppMsg WebAppPostFilterCtrlMsg where
     messageType _ = "post-filter"
     messageToJson (NewPostFilter id str) = makeObj [
-            ("type",        showJSON "post-filter")
+            webAppPostFilterCtrlMsgType
           , ("post-filter", showJSON "new")
           , ("filter-id",   showJSON id)
           , ("filter-str",  showJSON str)
         ]
     messageToJson (RmPostFilter id) = makeObj [
-            ("type",        showJSON "post-filter")
+            webAppPostFilterCtrlMsgType
           , ("post-filter", showJSON "remove")
           , ("filter-id",   showJSON id)
         ]
+    messageToJson (SetPostFilterState id b) = makeObj [
+            webAppPostFilterCtrlMsgType
+          , ("post-filter", showJSON "state")
+          , ("filter-id",   showJSON id)
+          , ("state",       showJSON b)
+        ]
+
+webAppPostFilterCtrlMsgType = ("type", showJSON "post-filter")
 
 -----------------------------------------------------------------------------
 

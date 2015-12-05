@@ -74,6 +74,7 @@ import DataAssociation.Explore.UI.Web.Application.Message
 import WekaData
 
 import Data.Maybe
+import Data.List (find)
 import Data.Set (Set)
 import qualified Data.Set as Set
 import qualified Data.Map as Map
@@ -291,21 +292,55 @@ instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
     ReactiveWebElem PostProcessFilterBuilderUI (AprioriWebAppState set it) where
         type ReactiveWebElemArg = [(String, JSValue)]
         reqParse u jobj reporter state =
-            do
-               let descriptor = read descriptorStr
-               filterId <- fmap (("post-filter-" ++) . UUID.toString) UUID.nextRandom
-               setPostProcess state [( PostFilterId filterId
-                                     , descriptor :: RuleFilter Item) ]
-               msg2UI reporter $ NewPostFilter filterId descriptorStr
-            where descriptorStr = fromMaybe (error "failed to read filter " ++ show jobj)
-                                            mbDescriptorStr
-                  mbDescriptorStr = do
-                      JSString rulePart           <- lookup "rule-side" jobj
-                      JSArray [JSObject builder]  <- lookup "builder"   jobj
-                      let itemsetFilter = postProcessFromJObj $ fromJSObject builder
-                      return $ unwords [ "RuleFilter"
-                                       , fromJSString rulePart
-                                       , itemsetFilter]
+            case fromJSString msgType of "new"   -> addNewFilter u jobj reporter state
+                                         "state" ->
+                                            case lookup "state" jobj
+                                                of Just (JSBool b) ->
+                                                    switchFilter b u jobj reporter state
+
+            where JSString msgType = fromMaybe (error "no message type provided")
+                                   $ lookup "post-filter" jobj
+
+
+
+addNewFilter u jobj reporter state = do
+       let descriptor = read descriptorStr
+       filterId <- fmap (("post-filter-" ++) . UUID.toString) UUID.nextRandom
+       filters' <- getPostProcess state
+       setPostProcess state $ filters' ++ [
+            ( ( PostFilterId filterId, PostFilterState True )
+            , descriptor :: RuleFilter Item)
+         ]
+       msg2UI reporter $ NewPostFilter filterId descriptorStr
+    where descriptorStr = fromMaybe (error "failed to read filter " ++ show jobj)
+                                    mbDescriptorStr
+          mbDescriptorStr = do
+              JSString rulePart           <- lookup "rule-side" jobj
+              JSArray [JSObject builder]  <- lookup "builder"   jobj
+              let itemsetFilter = postProcessFromJObj $ fromJSObject builder
+              return $ unwords [ "RuleFilter"
+                               , fromJSString rulePart
+                               , itemsetFilter]
+
+
+switchFilter b u jobj reporter state = do
+    filters' <- getPostProcess state :: IO [PostFilterEntry]
+    let JSString filterId' = fromMaybe (error "No 'filter-id' in message")
+                           $ lookup "filter-id" jobj
+    let filterId = fromJSString filterId'
+
+    let res = do f <- filters'
+                 return $ if postFilterId f == filterId
+                             then (postFilterUpdStatus f b, True)
+                             else (f, False)
+
+    let (newFilters, updFlags) = unzip res
+
+    case length $ filter id updFlags of 0 -> fail $ "No filter with id '"
+                                                  ++ filterId ++ "' found"
+                                        1 -> do setPostProcess state newFilters
+                                                msg2UI reporter $
+                                                       SetPostFilterState filterId b
 
 
 inParenthesis s  = "(" ++ s ++ ")"
@@ -355,15 +390,15 @@ instance ( AssociationRulesGenerator Set Item ) =>
         reqParse u jobj reporter state = do
             (cache, transactions) <- getCacheState state
             (minsup, minconf) <- getProgramConfigState state
-            filterDescrs <- getPostProcess state :: IO [(PostFilterId,RuleFilter Item)]
-            let filters = map (postProcessFromDescriptor . snd) filterDescrs
-            let postFilter xs = foldr postProcess xs filters
+            filterDescrs <- getPostProcess state :: IO [PostFilterEntry]
+            let filters = map (postProcessFromDescriptor . snd) . filter postFilterEnabled
+                        $ filterDescrs
 
             let largeSets = aprioriCached cache minsup
             let rules  = generateAssociationRules minconf transactions largeSets
-            let filtered = postFilter rules
+            let filtered = foldr postProcess rules filters
 
-            setCurrentRules state [filtered]   -- TODO : Postprocess
+            setCurrentRules state [filtered]   -- TODO : more postprocess
             sendDataToShow u reporter [filtered]
 
 -----------------------------------------------------------------------------

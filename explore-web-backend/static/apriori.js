@@ -174,6 +174,9 @@ var handlePostFilterChange = function(msg){
     case 'remove':
         $(id).remove();
         break;
+    case 'state':
+        setPostFilterState(id, msg['state']);
+        break;
   }
 };
 
@@ -181,9 +184,29 @@ var mkPostFilterDescription = function(id, str){
   chbox = $('<input type="checkbox" checked>');
   descr = $('<description/>').append(str);
   pfilt = $('<post-filter id="' + id + '"/>');
-  scrpt = '$("#' + id +  ' :checkbox").bootstrapSwitch({size: "mini"});'
-  bTogl = $('<script/>').append(scrpt);
-  return pfilt.append(chbox).append(descr).append(bTogl)
+  
+  chboxSel = '$("#' + id +  ' :checkbox")';
+  msg = '{ "elem-id": "post-filter", "filter-id": "' + id + '", "post-filter": "state", "state": state }' ;
+  onSwitch = 'function(e, state) { e.stopPropagation(); sendMessageToServer(' + msg + '); }';
+  script   = '.bootstrapSwitch({size: "mini", onSwitchChange: ' + onSwitch +'});';
+  bToggle  = $('<script/>').append(chboxSel + script);
+  return pfilt.append(chbox).append(descr).append(bToggle)
+}
+
+var setPostFilterState = function(id, state){
+  box = $('#'+id+' :checkbox');
+  switch (state){
+    case true:
+    case "true":
+    case "True":
+        box.bootstrapSwitch('state', true);
+        break;
+    case false:
+    case "false":
+    case "False":
+        box.bootstrapSwitch('state', false);
+        break;
+  }
 }
 
 /* * Constructor Dialog * */
@@ -215,7 +238,11 @@ var handleConstructorSubmit = function(event){
     event.stopPropagation();
     alert('Choose Rule Side');
   }
-  else sendMessageToServer({ 'elem-id': _constructorServerCall, 'rule-side': side, 'builder': collectConstructed() })
+  else sendMessageToServer({ 'elem-id': _constructorServerCall, 
+                             'post-filter': 'new', 
+                             'rule-side': side, 
+                             'builder': collectConstructed() 
+                          })
 }
 
 var collectConstructed = function(){

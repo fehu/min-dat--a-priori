@@ -7,8 +7,11 @@ TODO
 - [ ] Show a warning if the number of attributes is bigger than critical.
 - [ ] Provide a control for the min. support used for cache creation.
 
-- [ ] Provide checkboxes on/off for filters.
-- [ ] Guard on/off state on server.
+- [x] Provide checkboxes on/off for filters.
+- [x] Guard on/off state on server.
+
+- [ ] Provide small delete buttons for filters;
+- [ ] Remove Edit and Delete buttons in filters;
 
 Questions
 ---------
