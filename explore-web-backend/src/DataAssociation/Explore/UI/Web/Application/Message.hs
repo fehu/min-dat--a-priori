@@ -38,6 +38,8 @@ module DataAssociation.Explore.UI.Web.Application.Message (
 , WebAppDataRulesMsg(..)
 , rulesUpdateMsg
 
+, WebAppPostFilterCtrlMsg(..)
+
 ) where
 
 import DataAssociation
@@ -130,5 +132,22 @@ rulesUpdateMsg = WebAppDataRulesMsg
 
 -----------------------------------------------------------------------------
 
+data WebAppPostFilterCtrlMsg = NewPostFilter String String
+                             | RmPostFilter  String
 
+instance WebAppMsg WebAppPostFilterCtrlMsg where
+    messageType _ = "post-filter"
+    messageToJson (NewPostFilter id str) = makeObj [
+            ("type",        showJSON "post-filter")
+          , ("post-filter", showJSON "new")
+          , ("filter-id",   showJSON id)
+          , ("filter-str",  showJSON str)
+        ]
+    messageToJson (RmPostFilter id) = makeObj [
+            ("type",        showJSON "post-filter")
+          , ("post-filter", showJSON "remove")
+          , ("filter-id",   showJSON id)
+        ]
+
+-----------------------------------------------------------------------------
 

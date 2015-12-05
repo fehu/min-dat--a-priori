@@ -29,9 +29,10 @@ library
                        blaze-html   >= 0.8.1.0,
                        containers   >= 0.5,
                        json         >= 0.9.1,
-                       text         >= 1.2.1,
+                       text         -any,
                        transformers >= 0.3.0,
-                       filepath     >= 0.12.0
+                       filepath     -any,
+                       uuid         >= 1.2.6
   hs-source-dirs:      src
   exposed-modules:     DataAssociation.Explore.UI.Web.Application
                        DataAssociation.Explore.UI.Web.Application.DefaultImpl

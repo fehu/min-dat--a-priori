@@ -26,6 +26,9 @@ wSocket.onmessage = function(msg) {
       case 'rules':
           newAssocRules(obj['rules']);
           break;
+      case 'post-filter':
+          handlePostFilterChange(obj);
+          break;
      }
     };
 
@@ -145,9 +148,10 @@ var prepareDropdownJS = function(trigger, elem){
   return '$("' + trigger + '").click(function(e) { createFilterPartFromSelector(e.currentTarget, ' + elem + '.clone()) });'
 };
 
-var _filterPartSelectorSel = function() { return $('#filter-part-menu') };
-var filterConfigSel       = function() { return $('.config.filter') };
 
+var _filterPartSelectorSel = function() { return $('#filter-part-menu') };
+var filterConfigSel        = function() { return $('.config.filter') };
+var filtersListSel         = function() { return $('#filters-list') };
 
 
 var createFilterPartFromSelector = function(t, part){ $(t).parents('.create-filter-part').replaceWith(part) };
@@ -159,6 +163,23 @@ var initFilterConfig = function(){
   });
 };
 
+/* * Add/Remove shown Post-Filters * */
+
+var handlePostFilterChange = function(msg){
+  id = msg['filter-id'];
+  switch (msg['post-filter']){
+    case 'new':
+        filtersListSel().prepend(mkPostFilterDescription(id, msg['filter-str']));
+        break;
+    case 'remove':
+        $(id).remove();
+        break;
+  }
+};
+
+var mkPostFilterDescription = function(id, str){
+  return $('<post-filter id="' + id + '"><input type="checkbox"><description>' + str + '</description></post-filter>')
+}
 
 /* * Constructor Dialog * */
 

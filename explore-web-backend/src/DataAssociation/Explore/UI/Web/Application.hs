@@ -78,6 +78,8 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 import qualified Data.Text as T
+import qualified Data.UUID    as UUID
+import qualified Data.UUID.V4 as UUID
 
 import Control.Applicative ( (<$>) )
 import Control.Arrow
@@ -289,21 +291,21 @@ instance (Show WekaDataAttribute, WekaEntryToItemset set it) =>
     ReactiveWebElem PostProcessFilterBuilderUI (AprioriWebAppState set it) where
         type ReactiveWebElemArg = [(String, JSValue)]
         reqParse u jobj reporter state =
-            do putStrLn $ "jobj = " ++ show jobj
-               putStrLn $ "descriptorStr = " ++ show descriptorStr
+            do
                let descriptor = read descriptorStr
-               putStrLn $ "descriptor = " ++ show descriptor
-               setPostProcess state [descriptor :: RuleFilter Item]
-               msg2UI reporter DoneMsg
+               filterId <- fmap (("post-filter-" ++) . UUID.toString) UUID.nextRandom
+               setPostProcess state [( PostFilterId filterId
+                                     , descriptor :: RuleFilter Item) ]
+               msg2UI reporter $ NewPostFilter filterId descriptorStr
             where descriptorStr = fromMaybe (error "failed to read filter " ++ show jobj)
                                             mbDescriptorStr
                   mbDescriptorStr = do
                       JSString rulePart           <- lookup "rule-side" jobj
                       JSArray [JSObject builder]  <- lookup "builder"   jobj
                       let itemsetFilter = postProcessFromJObj $ fromJSObject builder
-                      return $ strConstructor [ "RuleFilter"
-                                              , fromJSString rulePart
-                                              , itemsetFilter]
+                      return $ unwords [ "RuleFilter"
+                                       , fromJSString rulePart
+                                       , itemsetFilter]
 
 
 inParenthesis s  = "(" ++ s ++ ")"
@@ -313,8 +315,8 @@ postProcessFromJObj [(k, JSString v)] = strConstructor [k, show $ fromJSString v
 postProcessFromJObj [(k, JSArray [JSObject o])] = strConstructor [k, postProcessFromJObj
                                                                      $ fromJSObject o  ]
 postProcessFromJObj [(k, JSArray [JSObject l, JSObject r])] =
-    strConstructor[k, postProcessFromJObj $ fromJSObject l
-                    , postProcessFromJObj $ fromJSObject r]
+    strConstructor [k, postProcessFromJObj $ fromJSObject l
+                     , postProcessFromJObj $ fromJSObject r ]
 
 postProcessFromJObj [] = ""
 
@@ -347,14 +349,14 @@ instance ShowUI ShowProcessedDataUI where sendDataToShow = sendDataToUI
 
 instance ReactiveWebElemConf (ShowProcessedDataUI set it) where reqParam = const ""
 
-instance ( AssociationRulesGenerator Set Item ) => -- , PostProcessInnerRepr (AprioriWebAppState Set Item) (RuleFilter Item)
+instance ( AssociationRulesGenerator Set Item ) =>
     ReactiveWebElem (ShowProcessedDataUI Set Item) (AprioriWebAppState Set Item) where
         type ReactiveWebElemArg = [(String, JSValue)]
         reqParse u jobj reporter state = do
             (cache, transactions) <- getCacheState state
             (minsup, minconf) <- getProgramConfigState state
-            filterDescrs <- getPostProcess state
-            let filters = map postProcessFromDescriptor (filterDescrs :: [RuleFilter Item])
+            filterDescrs <- getPostProcess state :: IO [(PostFilterId,RuleFilter Item)]
+            let filters = map (postProcessFromDescriptor . snd) filterDescrs
             let postFilter xs = foldr postProcess xs filters
 
             let largeSets = aprioriCached cache minsup
