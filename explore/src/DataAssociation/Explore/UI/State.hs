@@ -35,8 +35,6 @@ module DataAssociation.Explore.UI.State (
 
 ) where
 
---import Control.Concurrent.MVar
-
 import DataAssociation
 import DataAssociation.PostProcess.Descriptor
 import DataAssociation.Explore.UI.Application

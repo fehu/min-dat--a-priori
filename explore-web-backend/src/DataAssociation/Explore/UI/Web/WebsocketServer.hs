@@ -28,7 +28,6 @@ import WekaData
 
 import qualified Network.WebSockets as WS
 
-import Control.Concurrent
 import Control.Monad (forever)
 import Control.Exception (handle, SomeException)
 
