@@ -17,7 +17,7 @@ module DataAssociation.Explore.Program (
 ) where
 
 import DataAssociation.Definitions
-import DataAssociation.PostProcess.Descriptor
+import DataAssociation.PostProcess
 
 class ExploreProgram cache where
 

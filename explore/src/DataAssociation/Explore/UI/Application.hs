@@ -28,7 +28,7 @@ module DataAssociation.Explore.UI.Application(
 
 import DataAssociation
 import DataAssociation.Explore.Program
-import DataAssociation.PostProcess.Descriptor
+import DataAssociation.PostProcess
 
 
 -----------------------------------------------------------------------------

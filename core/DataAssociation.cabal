@@ -25,7 +25,6 @@ library
                      DataAssociation.Utils
                      DataAssociation.Itemset.SetImpl
                      DataAssociation.PostProcess
-                     DataAssociation.PostProcess.Descriptor
 --    other-modules:
 
 executable mine-rules

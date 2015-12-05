@@ -41,7 +41,7 @@ module DataAssociation.Explore.UI.State (
 ) where
 
 import DataAssociation
-import DataAssociation.PostProcess.Descriptor
+import DataAssociation.PostProcess
 import DataAssociation.Explore.UI.Application
 import WekaData
 

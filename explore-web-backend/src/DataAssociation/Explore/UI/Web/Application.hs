@@ -67,7 +67,6 @@ import DataAssociation.Abstract
 import DataAssociation.Definitions
 import DataAssociation.APriori.Public
 import DataAssociation.PostProcess
-import DataAssociation.PostProcess.Descriptor
 import DataAssociation.Explore.UI.Application
 import DataAssociation.Explore.UI.State
 import DataAssociation.Explore.UI.Web.Application.Message
