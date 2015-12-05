@@ -20,6 +20,8 @@ module DataAssociation.Explore.UI.State (
 , InitialState(..)
 , newStateWithInitial
 
+, PostFilterId(..)
+
 , getProgramConfigState
 , setProgramConfigState
 
@@ -55,11 +57,15 @@ instance Read Item where readsPrec d r = [(Item x, y)]
 
 -----------------------------------------------------------------------------
 
+newtype PostFilterId = PostFilterId String deriving (Show, Eq, Ord)
+
+-----------------------------------------------------------------------------
+
 data ApplicationState cache conf = ApplicationState{
     cacheState                  :: IORef cache
   , rawDataState                :: IORef RawWekaData
   , programConfigState          :: IORef conf
-  , postProcessFilterState      :: IORef (Set (RuleFilter Item))
+  , postProcessFilterState      :: IORef (Set (PostFilterId, RuleFilter Item))
   , postProcessSortState        :: IORef [RuleOrder Item]
   , postProcessGroupState       :: IORef (Maybe RuleGroup)
   , currentRules                :: IORef [[AssocRule Set Item]]
@@ -85,7 +91,8 @@ instance RawDataInnerRepr (ApplicationState cache conf) where
     getRawData = readIORef . rawDataState
     setRawData = writeIORef . rawDataState
 
-instance PostProcessInnerRepr (ApplicationState cache conf) (RuleFilter Item) where
+instance PostProcessInnerRepr (ApplicationState cache conf)
+                              (PostFilterId, RuleFilter Item) where
     getPostProcess = fmap Set.toList . readIORef . postProcessFilterState
     setPostProcess s = writeIORef (postProcessFilterState s) . Set.fromList
 
