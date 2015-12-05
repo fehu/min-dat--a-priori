@@ -178,7 +178,12 @@ var handlePostFilterChange = function(msg){
 };
 
 var mkPostFilterDescription = function(id, str){
-  return $('<post-filter id="' + id + '"><input type="checkbox"><description>' + str + '</description></post-filter>')
+  chbox = $('<input type="checkbox" checked>');
+  descr = $('<description/>').append(str);
+  pfilt = $('<post-filter id="' + id + '"/>');
+  scrpt = '$("#' + id +  ' :checkbox").bootstrapSwitch({size: "mini"});'
+  bTogl = $('<script/>').append(scrpt);
+  return pfilt.append(chbox).append(descr).append(bTogl)
 }
 
 /* * Constructor Dialog * */

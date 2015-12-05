@@ -101,19 +101,22 @@ pageHead = head $ do
 --    link ! A.rel "stylesheet"
 --         ! A.href "https://necolas.github.io/normalize.css/3.0.2/normalize.css"
 --
-    link ! A.rel "stylesheet"
-         ! A.type_ "text/css"
-         ! A.href "/static/apriori.css"
+    mkCss "/static/apriori.css"
 
-    link ! A.rel "stylesheet"
-         ! A.href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css"
-    link ! A.rel "stylesheet"
-         ! A.href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+    mkCss "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css"
+    mkCss "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
 
+    mkCss "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/css/bootstrap3/bootstrap-switch.min.css"
+
+
+mkCss url = link ! A.rel "stylesheet"
+                 ! A.type_ "text/css"
+                 ! A.href url
 
 pageScripts = do
     script "" ! A.src "//code.jquery.com/jquery-2.1.4.min.js"
     script "" ! A.src "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    script "" ! A.src "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/js/bootstrap-switch.min.js"
 
     script "var wSocket = new WebSocket('ws://localhost:9160/');"
     script "" ! A.src "/static/apriori.js"
