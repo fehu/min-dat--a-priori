@@ -34,6 +34,8 @@ import DataAssociation
 
 import Prelude hiding (Left, Right)
 import Data.Typeable
+import Data.List (sortBy)
+import Data.Function ( on )
 
 ---------------------------------------------------------------------------
 
@@ -97,17 +99,33 @@ data SortDir = Ascending | Descending deriving (Show, Read, Typeable, Eq, Ord)
 
 data SortBy = Support
             | Confidence
-            | Attribute RulePart [String]
+            | Attribute RulePart String
             deriving (Show, Read, Typeable, Eq, Ord)
 
 
-data RuleOrder = Sort SortDir SortBy
+data RuleOrder = Sort SortDir [SortBy]
                deriving (Show, Read, Typeable, Eq, Ord)
 
-instance (Typeable it, Show it, Read it, Ord it) =>
+instance (Itemset set it, Typeable it, Show it, Read it, Ord it) =>
     PostProcessDescription RuleOrder set it where
-        postProcessFromDescriptor (Sort Ascending  sortKeys) = undefined -- TODO
-        postProcessFromDescriptor (Sort Descending sortKeys) = undefined -- TODO
+        postProcessFromDescriptor (Sort Ascending  sortKeys) =
+            PostProcess $ sortBy (selectFields sortKeys)
+        postProcessFromDescriptor (Sort Descending sortKeys) =
+            PostProcess $ sortBy (flip(selectFields sortKeys))
+
+
+selectFields :: (Itemset set it, Read it) => [SortBy] -> AssocRule set it -> AssocRule set it -> Ordering
+selectFields (Support:kRest) r1 r2 = nextRule (compareRule support r1 r2) kRest r1 r2
+selectFields (Confidence:kRest) r1 r2 = nextRule (compareRule confidence r1 r2) kRest r1 r2
+selectFields (Attribute rPart attr:kRest) r1 r2 = nextRule (compareRule f r1 r2) kRest r1 r2
+    where f = flip containsItem (read attr) . r
+          r = case rPart of Left  -> ruleFrom
+                            Right -> ruleFollows
+
+
+nextRule c next r1 r2 = if c == EQ then selectFields next r1 r2
+                                   else c
+compareRule sel = compare `on` sel
 
 ---------------------------------------------------------------------------
 
