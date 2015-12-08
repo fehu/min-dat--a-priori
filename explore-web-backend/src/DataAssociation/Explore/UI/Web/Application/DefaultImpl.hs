@@ -281,23 +281,46 @@ filterPartSelectorMenu = ul ! A.class_ "dropdown-menu"
                                    li $ a "And"             ! A.class_ "create-and"
                                    li $ a "Or"              ! A.class_ "create-or"
 
-filterPartSelDropdown= div ! A.class_ "dropdown"
+
+mkDropdownMenu menu = div ! A.class_ "dropdown"
                        $ do
                             a ! A.class_ "dropdown-toggle"
---                              ! A.id "filter-part-dropdown"
                               ! customAttribute "role" "button"
                               ! customAttribute "data-toggle" "dropdown"
                               ! customAttribute "data-target" "#"
                               $ i "" ! A.class_ "glyphicon glyphicon-plus"
-                            filterPartSelectorMenu
+                            menu
+
+filterPartSelDropdown = mkDropdownMenu filterPartSelectorMenu
 
 filterPartSelectorUI = div ! A.id "filter-part-menu"
                            ! A.class_ "create-filter-part"
                            ! A.hidden "true"
                            $ filterPartSelDropdown
 
+-----------------------------------------------------------------------------
+
 postProcessSortBuilderUI = PostProcessSortBuilderUI $
-    span "TODO" ! A.class_ "todo"
+    div ! A.class_ "TODO" $ "TODO"
+--        do div ! A.class_ "btn-group"
+--               $ mkBootstrapButton "Add" "btn btn-success"
+--           div "" ! A.id "sort-list"
+
+
+postProcessSortSelDropdown = mkDropdownMenu $
+                            ul  ! A.class_ "dropdown-menu"
+                                ! customAttribute "role" "menu"
+                                $
+                                    do li $ a "Support"
+                                       li $ a "Confidence"
+                                       li $ a "Has Attribute"
+
+postProcessSortSelectorUI = div ! A.id "sort-part-menu"
+                                ! A.class_ "create-sort-part"
+                                ! A.hidden "true"
+                                $ postProcessSortSelDropdown
+
+-----------------------------------------------------------------------------
 
 postProcessGroupBuilderUI = PostProcessGroupBuilderUI $
     span "TODO" ! A.class_ "todo"

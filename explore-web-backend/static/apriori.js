@@ -144,7 +144,7 @@ var _random = function() { return (Math.random()).toString().substr(2) };
 
 
 
-/* * Filters Building * */
+/* * Building Filters * */
 
 var _filterPartSelected = null;
 
@@ -235,6 +235,15 @@ var setPostFilterState = function(id, state){
         break;
   }
 }
+
+
+
+
+/* * Building Sorts * */
+
+
+
+
 
 /* * Constructor Dialog * */
 

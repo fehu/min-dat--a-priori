@@ -377,6 +377,14 @@ newtype PostProcessSortBuilderUI = PostProcessSortBuilderUI Html
 instance HtmlElem PostProcessSortBuilderUI where
     elemHtml (PostProcessSortBuilderUI h) = h
 
+instance ReactiveWebElemConf PostProcessSortBuilderUI where reqParam = const undefined
+
+instance ReactiveWebElem PostProcessSortBuilderUI (AprioriWebAppState Set Item) where
+    type ReactiveWebElemArg = [(String, JSValue)]
+    reqParse u jobj reporter state = do
+
+        undefined
+
 -----------------------------------------------------------------------------
 
 newtype PostProcessGroupBuilderUI = PostProcessGroupBuilderUI Html
@@ -395,7 +403,7 @@ instance HtmlElem (ShowProcessedDataUI set it) where elemHtml = showDataHtml
 
 instance ShowUI ShowProcessedDataUI where sendDataToShow = sendDataToUI
 
-instance ReactiveWebElemConf (ShowProcessedDataUI set it) where reqParam = const ""
+instance ReactiveWebElemConf (ShowProcessedDataUI set it) where reqParam = const undefined
 
 instance ( AssociationRulesGenerator Set Item, Show WekaVal ) =>
     ReactiveWebElem (ShowProcessedDataUI Set Item) (AprioriWebAppState Set Item) where
